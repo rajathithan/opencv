@@ -135,6 +135,56 @@ plt.imshow(emptyOriginal)
 ```
 
 
+### Resizing the image
+
+```
+
+dst =   cv2.resize( src, dsize[, dst[, fx[, fy[, interpolation]]]]  )
+
+src - input image
+dst - output resized image
+dsize - output image size
+fx - scale factor along the horizontal axis;
+fy - scale factor along the vertical axis; Either dsize or both fx and fy must be non-zero.
+interpolation - interpolation method ( Bilinear / Bicubic etc ).
+
+Methods:
+1.Specify width and height of output image explicitly
+cv2.resize(image, (resizeWidth, resizeHeight), interpolation= cv2.INTER_LINEAR)
+
+2.Specify the scaling factors for resizing ( for both width and height )
+cv2.resize(image, None, fx= scalex, fy= scaley, interpolation= cv2.INTER_LINEAR)
+
+
+```
+
+
+### Mask using co-ordinates
+
+```
+mask1 = np.zeros_like(image)
+plt.imshow(mask1)
+
+mask1[50:200,170:320] = 255
+
+```
+
+
+
+
+### Create a mask using pixel intensity or color
+
+```
+The color with focus to be given  high intensity with a value of 100 to 255
+The color with low focus to be given low intensity with a value of 0 to 100
+
+inRange - provides a binary output with white pixels which falls within range and black pixels for out of range. 
+
+mask2 = cv2.inRange(    src, lowerb, upperb[, dst]  )
+
+mask2 = cv2.inRange(image, (0,0,150), (100,100,255))
+```
+
 
 
 
