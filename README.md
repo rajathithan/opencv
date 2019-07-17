@@ -1,4 +1,4 @@
-# opencv
+# OpenCV
 OpenCV respository
 
 
@@ -116,6 +116,23 @@ imgMerged = cv2.merge((b,g,r))
 
 ```
 
+
+### Empty numpy array
+
+```
+image = cv2.imread("filename.jpg")
+
+emptyMatrix = np.zeros((100,200,3),dtype='uint8')
+plt.imshow(emptyMatrix)
+
+emptyMatrix = 255*np.ones((100,200,3),dtype='uint8')
+plt.imshow(emptyMatrix)
+
+emptyOriginal = 100*np.ones_like(image)
+plt.imshow(emptyOriginal)
+
+
+```
 
 
 
