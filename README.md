@@ -93,6 +93,7 @@ params - Additional information, like specifying the JPEG compression quality et
 
 
 ### Read & convert image
+
 ```
 img = cv2.imread("filename.jpg")
 
@@ -138,7 +139,6 @@ plt.imshow(emptyOriginal)
 ### Resizing the image
 
 ```
-
 dst =   cv2.resize( src, dsize[, dst[, fx[, fy[, interpolation]]]]  )
 
 src - input image
@@ -154,7 +154,6 @@ cv2.resize(image, (resizeWidth, resizeHeight), interpolation= cv2.INTER_LINEAR)
 
 2.Specify the scaling factors for resizing ( for both width and height )
 cv2.resize(image, None, fx= scalex, fy= scaley, interpolation= cv2.INTER_LINEAR)
-
 
 ```
 
@@ -184,6 +183,57 @@ mask2 = cv2.inRange(    src, lowerb, upperb[, dst]  )
 
 mask2 = cv2.inRange(image, (0,0,150), (100,100,255))
 ```
+
+
+### Datatype conversion
+```
+Convert to float
+================
+image = cv2.imread("filename.jpg")
+scalingfactor = 1/255.0
+
+unsigned int to float
+=====================
+image = np.float32(image)
+image = image * scalingfactor
+
+Convert back to unsigned int
+============================
+image = image * (1.0/scalingFactor)
+image = np.uint8(image)
+
+```
+
+
+### Contrast Enhancement
+```
+contrastPercentage = 30
+
+If the image is in float datatype, then the range should be [0,1]. Anything above 255 is considered as white.
+If you want to keep the image in float format, then Normalize the instensity values so that it lies in [0,1]
+
+contrastImage = image * (1+contrastPercentage/100)
+clippedContrastImage = np.clip(contrastImage, 0, 255)
+contrastHighClippedUint8 = np.uint8(clippedContrastImage)
+
+If the image is in int datatype, then the range should be [0,255]
+Clip the intensity values to 0 ~ 255 and change the data type to uint8.
+
+contrastHighNormalized = (image * (1+contrastPercentage/100))/255
+contrastHighNormalized01Clipped = np.clip(contrastHighNormalized,0,1)
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
