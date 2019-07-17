@@ -240,6 +240,18 @@ brightHigh = image + brightnessOffset
 
 plt.imshow(brightHigh[...,::-1])
 
+use cv2.add or np.clip to prevent overflow
+
+int
+brightHighOpenCV = cv2.add(image, np.ones(image.shape,dtype='uint8')*brightnessOffset)
+brightHighInt32 = np.int32(image) + brightnessOffset
+brightHighInt32Clipped = np.clip(brightHighInt32,0,255)
+
+float
+brightHighFloat32 = np.float32(image) + brightnessOffset
+brightHighFloat32NormalizedClipped = np.clip(brightHighFloat32/255,0,1)
+brightHighFloat32ClippedUint8 = np.uint8(brightHighFloat32NormalizedClipped*255)
+
 ```
 
 
