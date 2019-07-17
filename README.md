@@ -61,3 +61,17 @@ cv2.destroyAllWindows()
 
 ```
 
+### Write to disk
+
+```
+cv2.imwrite(    filename, img [, params]    )
+
+filename - String providing the relative or absolute path where the image should be saved.
+img - Image matrix to be saved.
+params - Additional information, like specifying the JPEG compression quality etc
+
+https://docs.opencv.org/4.1.0/d4/da8/group__imgcodecs.html#ga292d81be8d76901bff7988d18d2b42ac
+
+```
+
+
