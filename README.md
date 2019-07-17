@@ -5,6 +5,8 @@ OpenCV respository
 ## Comprehensive list of openCV functions
 
 
+
+
 ### Image as a matrix
 
 ```
@@ -22,6 +24,9 @@ cv2.IMREAD_COLOR or 1: Loads a color image. Any transparency of image will be ne
 cv2.IMREAD_UNCHANGED or -1: Loads image as such including alpha channel.
 ```
 
+
+
+
 ### Matplotlib's & opencv's imshow
 
 ```
@@ -35,3 +40,24 @@ winname - Name of the window.
 mat - Image to be displayed.
 
 ```
+
+### Display utilities
+
+```
+cv2.namedWindow(    winname[, flags]    )
+winname - Name of the window in the window caption that may be used as a window identifier.
+flags - Flags of the window. The supported flags are: (cv::WindowFlags)
+
+
+cv2.waitKey(    [, delay]   )
+delay - Delay in milliseconds. 0 is the special value that means "forever".
+
+
+cv2.destroyWindow(  winname )
+winname - Name of the window to be destroyed
+
+
+cv2.destroyAllWindows()
+
+```
+
