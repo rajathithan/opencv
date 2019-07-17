@@ -169,8 +169,6 @@ mask1[50:200,170:320] = 255
 ```
 
 
-
-
 ### Create a mask using pixel intensity or color
 
 ```
@@ -207,6 +205,8 @@ image = np.uint8(image)
 
 ### Contrast Enhancement
 ```
+Io = αI
+α - scalingfactor
 contrastPercentage = 30
 
 If the image is in float datatype, then the range should be [0,1]. Anything above 255 is considered as white.
@@ -224,6 +224,23 @@ contrastHighNormalized01Clipped = np.clip(contrastHighNormalized,0,1)
 
 ```
 
+
+### Brightness Enhancement
+```
+Brightness is a measure of light falling on the scene. In RGB color space, it can be thought of as the arithmetic mean of the R, G and B color values. To make an image brighter, the intensity values should be increased by some offset (  β  ) and vice-versa.
+
+If  I  is the input image, and  Io  is the output image, brightness enhanced image is given by the equation
+
+Io=I+β
+
+brightnessoffset = 50
+
+# Add the offset for increasing brightness
+brightHigh = image + brightnessOffset
+
+plt.imshow(brightHigh[...,::-1])
+
+```
 
 
 
