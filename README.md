@@ -2,7 +2,7 @@
 OpenCV respository
 
 
-#Comprehensive list of openCV functions
+## Comprehensive list of openCV functions
 
 
 ### Image as a matrix
