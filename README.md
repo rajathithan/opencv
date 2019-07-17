@@ -25,6 +25,22 @@ cv2.IMREAD_UNCHANGED or -1: Loads image as such including alpha channel.
 ```
 
 
+### Image Properties
+```
+testImage = cv2.imread(imagePath,0)
+
+print("Data type = {}\n".format(testImage.dtype))
+print("Object type = {}\n".format(type(testImage)))
+print("Image Dimensions = {}\n".format(testImage.shape))
+
+Data type = uint8
+
+Object type = <class 'numpy.ndarray'>
+
+Image Dimensions = (13, 11)
+
+
+```
 
 
 ### Matplotlib's & opencv's imshow
@@ -40,6 +56,7 @@ winname - Name of the window.
 mat - Image to be displayed.
 
 ```
+
 
 ### Display utilities
 
@@ -61,6 +78,7 @@ cv2.destroyAllWindows()
 
 ```
 
+
 ### Write to disk
 
 ```
@@ -73,6 +91,33 @@ params - Additional information, like specifying the JPEG compression quality et
 ```
 (https://docs.opencv.org/4.1.0/d4/da8/group__imgcodecs.html#ga292d81be8d76901bff7988d18d2b42ac)
 
+
+### Read file
 ```
+img = cv2.imread("filename.jpg")
+
+imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+plt.imshow(imgRGB,cmap='gray')
+
+or
+
+plt.imshow(img[:,:,::-1],cmap='gray')
+
+```
+
+
+### Split and Merge
+
+```
+b,g,r = cv2.split(img)
+
+
+imgMerged = cv2.merge((b,g,r))
+
+```
+
+
+
+
 
 
