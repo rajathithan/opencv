@@ -92,7 +92,7 @@ params - Additional information, like specifying the JPEG compression quality et
 (https://docs.opencv.org/4.1.0/d4/da8/group__imgcodecs.html#ga292d81be8d76901bff7988d18d2b42ac)
 
 
-### Read file
+### Read & convert image
 ```
 img = cv2.imread("filename.jpg")
 
