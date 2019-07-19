@@ -298,6 +298,105 @@ They will be highly useful while extracting any part of the image , defining and
 ```
 
 
+## Draw a Line
+
+```
+line(img, pt1, pt2, color[, thickness[, lineType[, shift]]]) -> img
+The arguments that we will focus on are:
+
+img: Image on which we will draw a line
+pt1: First point(x,y location) of the line segment
+pt2: Second point of the line segment
+color: Color of the line which will be drawn
+The above arguments are compulsory. Other arguments that are important for us to know and are optional are:
+
+thickness: Integer specifying the line thickness. Default value is 1.
+lineType: Type of the line. Default value is 8 which stands for an 8-connected line. Usually, cv2.LINE_AA (antialiased or smooth line) is used for the lineType.
+
+cv2.line(imageLine, (200, 80), (280, 80), (0, 255, 0), thickness=3, lineType=cv2.LINE_AA);
+
+```
+
+
+## Draw a circle
+
+```
+circle(img, center, radius, color[, thickness[, lineType[, shift]]]) -> img
+First, the mandatory arguments:
+
+img: Image where the circle is drawn.
+center: Center of the circle.
+radius: Radius of the circle.
+color: Circle color
+Next, let's check out the (optional) arguments which we are going to use quite extensively.
+
+thickness: Thickness of the circle outline (if positive). If a negative value is supplied for this argument, it will result in a filled circle.
+lineType: Type of the circle boundary. This is exact same as lineType argument in cv2.line
+
+cv2.circle(imageCircle, (250, 125), 100, (0, 0, 255), thickness=5, lineType=cv2.LINE_AA);
+
+cv2.circle(imageFilledCircle, (250, 125), 100, (0, 0, 255), thickness=-1, lineType=cv2.LINE_AA);
+
+```
+
+
+## Draw an Ellipse
+
+```
+ellipse(img, center, axes, angle, startAngle, endAngle, color[, thickness[, lineType[, shift]]]) -> img
+The mandatory arguments are as follows.
+
+img: Image on which the ellipse is to be drawn.
+center: Center of the ellipse.
+axes: radius of the ellipse major and minor axes.
+angle: Ellipse rotation angle in degrees.
+startAngle: Starting angle of the elliptic arc in degrees.
+endAngle: Ending angle of the elliptic arc in degrees.
+color: Ellipse line color
+The optional arguments that we are going to use are the same as before and carry the same meaning.
+
+starting angle is 0 and ending angle is 360
+
+cv2.ellipse(imageEllipse, (250, 125), (100, 50), 0, 0, 360, (255, 0, 0), thickness=3, lineType=cv2.LINE_AA);
+cv2.ellipse(imageEllipse, (250, 125), (100, 50), 90, 0, 360, (0, 0, 255), thickness=3, lineType=cv2.LINE_AA);
+
+starting angle = 180 and ending angle = 360 - Incomplete open eclipse
+
+cv2.ellipse(imageEllipse, (250, 125), (100, 50), 0, 180, 360, (255, 0, 0), thickness=3, lineType=cv2.LINE_AA);
+
+starting angle = 0 and ending angle = 180 - Incomplete filled eclipse
+
+cv2.ellipse(imageEllipse, (250, 125), (100, 50), 0, 0, 180, (0, 0, 255), thickness=-2, lineType=cv2.LINE_AA);
+
+```
+
+## Draw a rectangle
+
+```
+rectangle(img, pt1, pt2, color[, thickness[, lineType[, shift]]]) -> img
+The mandatory arguments are as follows.
+
+img: Image on which the rectangle is to be drawn.
+pt1: Vertex of the rectangle. Usually we use the top-left vertex here.
+pt2: Vertex of the rectangle opposite to pt1. Usually we use the bottom-right vertex here.
+color: Rectangle color
+The optional arguments that we are going to use are same as before.
+
+We need two points to draw a rectangle. These are the opposite vertices of the rectangle. From the sample image, we can approximately find the vertices as
+
+top-left - (170,50)
+bottom-right - (300,200)
+
+cv2.rectangle(imageRectangle, (170, 50), (300, 200), (255, 0, 255), thickness=5, lineType=cv2.LINE_8);
+
+```
+
+
+
+
+
+
+
 
 
 
