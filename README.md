@@ -254,6 +254,45 @@ brightHighFloat32ClippedUint8 = np.uint8(brightHighFloat32NormalizedClipped*255)
 
 ```
 
+### Bitwise Operations
+```
+AND operation: cv2.bitwise_and
+
+OR operation: cv2.bitwise_or
+
+NOT operation: cv2.bitwise_not
+
+XOR operation: cv2.bitwise_xor
+
+dst    =    cv2.bitwise_XXX(    src1, src2[, dst[, mask]]    )
+
+Parameters
+
+src1 - first input.
+src2 - second input.
+dst - output array that has the same size and type as the input array.
+mask - optional operation mask, 8-bit single channel array, that specifies elements of the output array to be changed. The operation is applied only on those pixels of the input images where the mask is non-zero.
+
+
+O In-1 In-2 Out
+AND	0	0	0
+AND	0	1	0
+AND	1	0	0
+AND	1	1	1
+OR	0	0	0
+OR	0	1	1
+OR	1	0	1
+OR	1	1	1
+NOT	0	NA	1
+NOT	1	NA	0
+XOR	0	0	0
+XOR	0	1	1
+XOR	1	0	1
+XOR	1	1	0
+
+```
+
+
 
 
 
