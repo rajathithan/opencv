@@ -274,21 +274,27 @@ dst - output array that has the same size and type as the input array.
 mask - optional operation mask, 8-bit single channel array, that specifies elements of the output array to be changed. The operation is applied only on those pixels of the input images where the mask is non-zero.
 
 
-O In-1 In-2 Out
-AND	0	0	0
-AND	0	1	0
-AND	1	0	0
-AND	1	1	1
-OR	0	0	0
-OR	0	1	1
-OR	1	0	1
-OR	1	1	1
-NOT	0	NA	1
-NOT	1	NA	0
-XOR	0	0	0
-XOR	0	1	1
-XOR	1	0	1
-XOR	1	1	0
+Here's a cheat sheet on the input and output table for these bitwise operations.
+
+| **Operation** | **Input-1** | **Input-2** | **Output** |
+| --- | --- | --- | --- |
+| **AND** | 0 | 0 | 0 |
+| **AND** | 0 | 1 | 0 |
+| **AND** | 1 | 0 | 0 |
+| **AND** | 1 | 1 | 1 |
+| **OR** | 0 | 0 | 0 |
+| **OR** | 0 | 1 | 1 |
+| **OR** | 1 | 0 | 1 |
+| **OR** | 1 | 1 | 1 |
+| **NOT** | 0 | NA | 1 |
+| **NOT** | 1 | NA | 0 |
+| **XOR** | 0 | 0 | 0 |
+| **XOR** | 0 | 1 | 1 |
+| **XOR** | 1 | 0 | 1 |
+| **XOR** | 1 | 1 | 0 |
+
+They will be highly useful while extracting any part of the image , defining and working with non-rectangular ROI etc.
+
 
 ```
 
