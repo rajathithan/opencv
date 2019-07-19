@@ -276,7 +276,7 @@ mask - optional operation mask, 8-bit single channel array, that specifies eleme
 
 Here's a cheat sheet on the input and output table for these bitwise operations.
 
-Operation	Input-1	Input-2	Output
+OperationInput-1 Input-2	Output
 AND	0	0	0
 AND	0	1	0
 AND	1	0	0
