@@ -391,6 +391,92 @@ cv2.rectangle(imageRectangle, (170, 50), (300, 200), (255, 0, 255), thickness=5,
 
 ```
 
+## Add Text
+
+```
+putText(img, text, org, fontFace, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]]) -> img
+The mandatory arguments that we need to focus on are:
+
+img: Image on which the text has to be written.
+text: Text string to be written.
+org: Bottom-left corner of the text string in the image.
+fontFace: Font type
+fontScale: Font scale factor that is multiplied by the font-specific base size.
+color: Font color
+The optional arguments that we are going to use are same as before.
+
+text = "I am studying"
+fontScale = 1.5
+fontFace = cv2.FONT_HERSHEY_COMPLEX
+fontColor = (250, 10, 10)
+fontThickness = 2
+cv2.putText(imageText, text, (20, 350), fontFace, fontScale, fontColor, fontThickness, cv2.LINE_AA);
+
+Get font size from pixel height of text 
+
+fontScale   =   cv2.getFontScaleFromHeight( fontFace, pixelHeight[, thickness]  )
+Parameters
+
+fontFace - Font to use
+pixelHeight - Pixel height to compute the fontScale for
+thickness - Thickness of lines used to render the text. See putText for details
+fontScale (Output) - The fontsize to use in cv2.putText() function.
+
+pixelHeight = 20
+
+# Calculate the fontScale
+fontScale = cv2.getFontScaleFromHeight(fontFace, pixelHeight, fontThickness)
+print("fontScale = {}".format(fontScale))
+
+imageTextFontScale = image.copy()
+cv2.putText(imageTextFontScale, text, (20, 350), fontFace, fontScale, fontColor, fontThickness, cv2.LINE_AA);
+
+Get height and width of text
+
+textSize, baseLine  =   cv2.getTextSize(    text, fontFace, fontScale, thickness    )
+Parameters
+
+text - Input text string.
+fontFace - Font to use, see HersheyFonts.
+fontScale - Font scale factor that is multiplied by the font-specific base size.
+thickness - Thickness of lines used to render the text. See putText for details.
+baseLine (Output) - y-coordinate of the baseline relative to the bottom-most text point. In our example, this value will be the difference in height of the bottom-most tip of y and i
+textSize (Output) - The text size (width, height)
+
+
+imageGetTextSize = image.copy()
+imageHeight, imageWidth=imageGetTextSize.shape[:2]
+
+# Get the text box height and width and also the baseLine
+textSize, baseLine = cv2.getTextSize(text,fontFace,fontScale,fontThickness)
+textWidth,textHeight = textSize
+print("TextWidth = {}, TextHeight = {}, baseLine = {}".format(textWidth, textHeight, baseLine))
+
+# Get the coordinates of text box bottom left corner
+# The xccordinate will be such that the text is centered
+xcoordinate = (imageWidth - textWidth)//2
+# The y coordinate will be such that the entire box is just 10 pixels above the bottom of image
+ycoordinate = (imageHeight - baseLine - 10)
+print("TextBox Bottom Left = ({},{})".format(xcoordinate,ycoordinate))
+
+# Draw the Canvas using a filled rectangle
+canvasColor = (255, 255, 255)
+canvasBottomLeft = (xcoordinate,ycoordinate+baseLine)
+canvasTopRight = (xcoordinate+textWidth, ycoordinate-textHeight)
+cv2.rectangle(imageGetTextSize, canvasBottomLeft, canvasTopRight, canvasColor, thickness=-1);
+print("Canvas Bottom Left = {}, Top Right = {}".format(canvasBottomLeft,canvasTopRight))
+
+# Now draw the baseline ( just for reference )
+lineThickness = 2
+lineLeft = (xcoordinate, ycoordinate)
+lineRight = (xcoordinate+textWidth, ycoordinate)
+lineColor = (0,255,0)
+cv2.line(imageGetTextSize, lineLeft, lineRight, lineColor, thickness = lineThickness, lineType=cv2.LINE_AA);
+
+# Finally Draw the text
+cv2.putText(imageGetTextSize, text, (xcoordinate,ycoordinate), fontFace, fontScale, fontColor, fontThickness, cv2.LINE_AA);
+
+```
 
 
 
