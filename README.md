@@ -479,6 +479,21 @@ cv2.putText(imageGetTextSize, text, (xcoordinate,ycoordinate), fontFace, fontSca
 ```
 
 
+## Video Capture
+```
+cv2.VideoCapture to create a VideoCapture object and read from input file (video).
+
+Function Syntax 
+<VideoCapture object>   =   cv.VideoCapture(        )
+<VideoCapture object>   =   cv.VideoCapture(    filename[, apiPreference]   )
+<VideoCapture object>   =   cv.VideoCapture(    index[, apiPreference]  )
+Parameters
+
+filename it can be:
+name of video file (eg. video.avi)
+or image sequence (eg. img_%02d.jpg, which will read samples like img_00.jpg, img_01.jpg, img_02.jpg, ...) -or URL of video stream (eg. protocol://host:port/script_name?script_params|auth). Note that each video stream or IP camera feed has its own URL scheme. Please refer to the documentation of source stream to know the right URL.
+apiPreference: preferred Capture API backends to use. Can be used to enforce a specific reader implementation if multiple are available: e.g. cv::CAP_FFMPEG or cv::CAP_IMAGES or cv::CAP_DSHOW.
+```
 
 
 
