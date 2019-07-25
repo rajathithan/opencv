@@ -496,6 +496,26 @@ apiPreference: preferred Capture API backends to use. Can be used to enforce a s
 ```
 
 
+## Video set and get properties
+```
+cap.get(propId)
+cap.set(propId,value)
+
+cap is the VideoCapture object from where we want to extract (or set) the properties, propId stands for the Property ID and value is the value we want to set for the property with id propId.
+
+Here are some of the common properties and their ID.
+
+Enumerator	Numerical Value	Property
+cv2.CAP_PROP_POS_MSEC	0	Current position of the video file in milliseconds
+cv2.CAP_PROP_FRAME_WIDTH	3	Width of the frames in the video stream
+cv2.CAP_PROP_FRAME_HEIGHT	4	Height of the frames in the video stream
+cv2.CAP_PROP_FPS	5	Frame rate
+cv2.CAP_PROP_FOURCC	6	4-character code of codec
+```
+
+
+
+
 
 
 
