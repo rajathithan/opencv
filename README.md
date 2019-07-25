@@ -484,9 +484,9 @@ cv2.putText(imageGetTextSize, text, (xcoordinate,ycoordinate), fontFace, fontSca
 cv2.VideoCapture to create a VideoCapture object and read from input file (video).
 
 Function Syntax 
-<VideoCapture object>   =   cv.VideoCapture(        )
-<VideoCapture object>   =   cv.VideoCapture(    filename[, apiPreference]   )
-<VideoCapture object>   =   cv.VideoCapture(    index[, apiPreference]  )
+<VideoCapture object>   =   cv2.VideoCapture(        )
+<VideoCapture object>   =   cv2.VideoCapture(    filename[, apiPreference]   )
+<VideoCapture object>   =   cv2.VideoCapture(    index[, apiPreference]  )
 Parameters
 
 filename it can be:
@@ -513,7 +513,26 @@ cv2.CAP_PROP_FPS	5	Frame rate
 cv2.CAP_PROP_FOURCC	6	4-character code of codec
 ```
 
+## Video Writer
+```
+Create a VideoWriter object
 
+Function Syntax 
+<VideoWriter object>    =   cv2.VideoWriter(     )
+<VideoWriter object>    =   cv2.VideoWriter( filename, fourcc, fps, frameSize[, isColor] )
+<VideoWriter object>    =   cv2.VideoWriter( filename, apiPreference, fourcc, fps, frameSize[, isColor]  )
+Parameters
+
+filename: Name of the output video file.
+fourcc: 4-character code of codec used to compress the frames. For example, VideoWriter::fourcc('P','I','M','1') is a MPEG-1 codec, VideoWriter::fourcc('M','J','P','G') is a motion-jpeg codec etc. List of codes can be obtained at Video Codecs by FOURCC page. FFMPEG backend with MP4 container natively uses other values as fourcc code: see ObjectType, so you may receive a warning message from OpenCV about fourcc code conversion.
+fps: Framerate of the created video stream.
+frameSize: Size of the video frames.
+isColor: If it is not zero, the encoder will expect and encode color frames, otherwise it will work with grayscale frames (the flag is currently supported on Windows only).
+2. Write frames to the object in a loop.
+
+3. Close and release the object.
+
+```
 
 
 
