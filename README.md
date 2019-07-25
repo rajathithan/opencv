@@ -535,6 +535,23 @@ isColor: If it is not zero, the encoder will expect and encode color frames, oth
 ```
 
 
+## Mouse for Annotation
+```
+cv2.setMouseCallback
+
+cv.setMouseCallback(winname, onMouse, userdata  )
+Parameters
+
+winname - Name of the window.
+onMouse - Callback function for mouse events.
+userdata - The optional parameter passed to the callback.
+
+cv2.setMouseCallback("Window", functionName)
+functionName(action, x, y, flags, userdata)
+action==cv2.EVENT_LBUTTONDOWN
+action==cv2.EVENT_LBUTTONUP
+```
+
 
 
 
