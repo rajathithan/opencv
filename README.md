@@ -552,6 +552,31 @@ action==cv2.EVENT_LBUTTONDOWN
 action==cv2.EVENT_LBUTTONUP
 ```
 
+## Trackbar 
+```
+For creating trackbars, we have to specify a named window and use the cv2.createTrackbar() function in which we need to specify the window name. A callback function needs to be specified for detecting events on the trackbar. Let’s see an example code.
+
+Let's first focus on the callback functions.
+
+The trackbars are created using the createTrackbar function. The different parameters of the function are given below.
+
+cv2.createTrackbar(trackbarName, windowName, value, count, onChange)
+
+trackbarname is the name that will be displayed alongside the trackbar
+windowName is the namedWindow associated with the callback function
+value is a pointer to an integer variable whose value indicates the position of the trackbar
+Count is the maximum position of the trackbar, minimum being 0 always
+onChange is the callback function which is associated with the winname window and gets triggered when the trackbar is accessed by the user
+# Create Trackbar to choose scale percentage
+cv2.createTrackbar(trackbarValue, windowName, scaleFactor, maxScaleUp, scaleImage)
+
+# Create Trackbar to choose tyoe of scaling ( Up or Down )
+cv2.createTrackbar(trackbarType, windowName, scaleType, maxType, scaleImage)
+
+# Get Tracjbar position
+cv2.getTrackbarPos(trackbarType, windowName)
+```
+
 
 
 
