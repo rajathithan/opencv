@@ -578,10 +578,83 @@ cv2.getTrackbarPos(trackbarType, windowName)
 ```
 
 
+## Thresholding using Loop
+```
+def thresholdUsingLoop(src, thresh, maxValue):
+    # Create a output image
+    dst = src.copy()
+    height,width = src.shape[:2]
+
+    # Loop over rows
+    for i in range(height):
+        # Loop over columns
+        for j in range(width):
+            if src[i,j] > thresh:
+                dst[i,j] = maxValue
+            else:
+                dst[i,j] = 0
+                
+    return dst
+
+t = time.time()
+dst = thresholdUsingLoop(src, thresh, maxValue)
+```
 
 
+## Thresholding using Vectorized Operations
+```
+def thresholdUsingVectors(src, thresh, maxValue):
+    # Create a black output image ( all zeros )
+    dst = np.zeros_like(src)
+    
+    # Find pixels which have values>threshold value
+    thresholdedPixels = src>thresh
+    
+    # Assign those pixels maxValue
+    dst[thresholdedPixels] = maxValue
+    
+    return dst
+
+t = time.time()
+dst = thresholdUsingVectors(src, thresh, maxValue)
+```
 
 
+## Thresholding using OpenCV function
+```
+cv2.threshold has the following syntax :
+
+retval, dst = cv.threshold(src, thresh, maxval, type[, dst])
+
+Where,
+
+Input:
+
+src is the input array ot image (multiple-channel, 8-bit or 32-bit floating point).
+thresh is the threshold value.
+maxval is the maximum value to use with the THRESH_BINARY and THRESH_BINARY_INV thresholding types.
+type is thethresholding type ( THRESH_BINARY, THRESH_BINARY_INV, etc )
+Output:
+
+dst is the output array or image of the same size and type and the same number of channels as src.
+retval is the threshold value if you use other thresholding types such as Otsu or Triangle
+
+Threshold Binary
+th, dst_bin = cv2.threshold(src, thresh, maxValue, cv2.THRESH_BINARY)
+
+Threshold Binary Inverse
+th, dst_bin_inv = cv2.threshold(src, thresh, maxValue, cv2.THRESH_BINARY_INV)
+
+Threshold truncate
+th, dst_trunc = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TRUNC)
+
+Threshold to zero
+th, dst_to_zero = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TOZERO)
+
+Threshold to zero Inverse
+th, dst_to_zero_inv = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TOZERO_INV)
+
+```
 
 
 
