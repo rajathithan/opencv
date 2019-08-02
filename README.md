@@ -664,6 +664,42 @@ Convert any pixel above the threshold to zero and below the threshold to maintai
 ```
 
 
+## Morphological Operations - Dilasion - Increase white pixels in a Binary image
+## Morphological Operations - Erosion - Erode white pixels in a Binary image
+```
+Dilation
+Function Syntax
+dst    =    cv.dilate(    src, kernel[, dst[, anchor[, iterations[, borderType[, borderValue]]]]]    )
+
+Erosion
+Function Syntax
+dst    =    cv.erode(    src, kernel[, dst[, anchor[, iterations[, borderType[, borderValue]]]]]    )
+
+Parameters
+
+Both functions take the same set of arguments
+
+src input image; the number of channels can be arbitrary, but the depth should be one of CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+dst output image of the same size and type as src.
+kernel structuring element used for dilation; if elemenat=Mat(), a 3 x 3 rectangular structuring element is used.
+
+# Get structuring element/kernel which will be used for dilation
+kSize = (7,7)
+kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kSize)
+plt.imshow(kernel1)
+
+cv2.dilate(image, kernel1, iterations=1)
+
+cv2.erode(image, kernel1)
+
+
+
+anchor position of the anchor within the element; default value (-1, -1) means that the anchor is at the element center.
+iterations number of times dilation is applied.
+borderType pixel extrapolation method.
+borderValue border value in case of a constant border
+Note: In the functions above, the parameter ‘iterations’ is optional and if not mentioned default is taken as 1. In case, we need to run the dilate/erode function n number of times we specify "iterations = n" in the function parameter list.
+```
 
 
 
