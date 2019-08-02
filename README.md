@@ -639,22 +639,30 @@ Output:
 dst is the output array or image of the same size and type and the same number of channels as src.
 retval is the threshold value if you use other thresholding types such as Otsu or Triangle
 
+thresh = 100
+maxValue = 150 
+
 Threshold Binary
 th, dst_bin = cv2.threshold(src, thresh, maxValue, cv2.THRESH_BINARY)
+Convert any pixel above the threshold of 100 to 150 and below the threshold to zero.
 
 Threshold Binary Inverse
 th, dst_bin_inv = cv2.threshold(src, thresh, maxValue, cv2.THRESH_BINARY_INV)
+Convert any pixel above the threshold of 100 to 0 and below or equal to the threshold is set to 150 max_value.
 
 Threshold truncate
 th, dst_trunc = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TRUNC)
+Convert any pixel above or equal to the maxvalue is made equal to the threshold.
 
 Threshold to zero
 th, dst_to_zero = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TOZERO)
+Convert any pixel above the threshold of 100 will maintain its pixel value and below the threshold to zero.
 
 Threshold to zero Inverse
 th, dst_to_zero_inv = cv2.threshold(src, thresh, maxValue, cv2.THRESH_TOZERO_INV)
-
+Convert any pixel above the threshold to zero and below the threshold to maintain its pixel value.
 ```
+
 
 
 
