@@ -1,5 +1,5 @@
 # OpenCV
-OpenCV respository
+OpenCV repository
 
 
 ## Comprehensive list of openCV functions
