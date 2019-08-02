@@ -664,8 +664,7 @@ Convert any pixel above the threshold to zero and below the threshold to maintai
 ```
 
 
-## Morphological Operations - Dilasion - Increase white pixels in a Binary image
-## Morphological Operations - Erosion - Erode white pixels in a Binary image
+## Morphological Operations - Dilasion - Increase white pixels in a Binary image // Erosion - Erode white pixels in a Binary image
 ```
 Dilation
 Function Syntax
