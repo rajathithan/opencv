@@ -826,4 +826,44 @@ plt.imshow(imColorMap[:,:,::-1])
 ```
 
 
+## Contour Analysis
+```
+Find border of image using white pixels from a binary image, 
 
+Input to find_contour:
+Binary Image
+Mode
+Method
+
+Output:
+Contour
+Hierarchy
+
+MODE: 
+RETR_External - Outer Contour
+RETR_List - List of Contours
+RETR_CCOMP - Retrieves Contours with 2 level Hierarchy 
+RETR_TREE - Full Hierarchy of Nested Contours
+
+Methods: Points to Display the Contour
+CHAIN_APPROX_NONE - All the boundary points are returned as part of the contour
+CHAIN_APPROX_SIMPLE - Captures only end points of the contour
+CHAIN_APPROX_TC89_L1 - Approximation method used for finding contours of un-even shapes
+CHAIN_APPROX_TC89_KCOS - Approximation method used for finding contours of un-even shapes
+
+Contours - Array of array of points
+Hierarchy - ContourNo, Next, Previous, First Child, Parent
+
+approxPolyDP - approximate poly dynamic programming gives the points in the contour.
+
+contours, hierarchy =   cv.findContours(image, mode, method[, contours[, hierarchy[, offset]]])
+Where,
+
+image - input image (8-bit single-channel). Non-zero pixels are treated as 1's. Zero pixels remain 0's, so the image is treated as binary . You can use compare, inRange, threshold , adaptiveThreshold, Canny, and others to create a binary image out of a grayscale or color one.
+contours - Detected contours. Each contour is stored as a vector of points.
+hierarchy - Optional output vector containing information about the image topology. It has been described in detail in the video above.
+mode - Contour retrieval mode, ( RETR_EXTERNAL, RETR_LIST, RETR_CCOMP, RETR_TREE )
+method - Contour approximation method. ( CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1 etc )
+offset - Optional offset by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context.
+
+```
