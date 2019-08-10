@@ -801,7 +801,29 @@ for i in range(nComponents+1):
 
 ```
 
+## ColorMap
+```
+It is a bit difficult to visualize the difference in intensity value in grayscale images, we apply a colormap so that grayscale values are converted to color for the purpose of display.
 
+First, we normalize the image pixel values to 0 to 255. To achieve this we first find the min and max values in the image, and then normalize the image by subtracting the min and dividing by (max - min). This normalizes the image to be between 0 and 1. Finally 255 is multiplied to we get an image with values between 0 and 255. Finally, we apply a colormap on the labelled image. 
+
+Lets see how to apply colormaps to the labels obtained from connected component analysis
+
+# The following line finds the min and max pixel values
+# and their locations on an image.
+(minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(imLabels)
+
+# Normalize the image so that the min value is 0 and max value is 255.
+imLabels = 255 * (imLabels - minVal)/(maxVal-minVal)
+
+# Convert image to 8-bits unsigned type
+imLabels = np.uint8(imLabels)
+
+# Apply a color map
+imColorMap = cv2.applyColorMap(imLabels, cv2.COLORMAP_JET)
+plt.imshow(imColorMap[:,:,::-1])
+
+```
 
 
 
