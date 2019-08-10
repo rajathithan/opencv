@@ -724,7 +724,54 @@ Note: In the functions above, the parameter ‘iterations’ is optional and if 
 ```
 
 
+## Opening ( First Erosion , Then Dilation ) / Closing ( First Dilation, Then Erosion )
+```
+Opening refers Erosion followed by Dilation and these operations is used for clearing white blobs and Closing refers Dilation followed by Erosion and are used for clearing black holes
 
+Opening
+python:
+
+imageMorphOpened = cv2.morphologyEx( src, cv2.MORPH_OPEN, kernel[, dst[, anchor[, iterations[, borderType[, borderValue]]]]] )
+
+Closing
+python:
+imageMorphOpened = cv2.morphologyEx( src, cv2.MORPH_CLOSE, kernel[, dst[, anchor[, iterations[, borderType[, borderValue]]]]] )
+
+Parameters
+
+src - Source image. The number of channels can be arbitrary. The depth should be one of CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+dst - Destination image of the same size and type as source image.
+op - Type of a morphological operation
+kernel - Structuring element. It can be created using getStructuringElement.
+anchor - Anchor position with the kernel. Negative values mean that the anchor is at the kernel center.
+iterations - Number of times erosion and dilation are applied.
+borderType - Pixel extrapolation method.
+borderValue - Border value in case of a constant border. The default value has a special meaning.
+
+# Get structuring element/kernel which will be used 
+# for opening operation
+openingSize = 3
+
+# Selecting a elliptical kernel
+element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
+            (2 * openingSize + 1, 2 * openingSize + 1),
+            (openingSize,openingSize))
+            
+imageMorphOpened = cv2.morphologyEx(image, cv2.MORPH_OPEN, 
+                        element,iterations=3)
+------------------------                        
+# Get structuring element/kernel 
+# which will be used for closing operation
+closingSize = 10
+
+# Selecting an elliptical kernel 
+element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+            (2 * closingSize + 1, 2 * closingSize + 1),
+            (closingSize,closingSize))
+
+imageMorphClosed = cv2.morphologyEx(image,
+                                    cv2.MORPH_CLOSE, element)
+```
 
 
 
