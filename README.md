@@ -774,6 +774,33 @@ imageMorphClosed = cv2.morphologyEx(image,
 ```
 
 
+## Connected Component Analysis
+```
+It is a fancy name for labeling blobs in a binary image. So, it can also be used to count the number of blobs ( also called connected components ) in a binary image. (Two-pass algorithm - To label blobs based on white pixels on first pass, rename the labels for adjacent pixels (Connected pixels) in second pass
+
+# Threshold Image
+th, imThresh = cv2.threshold(im, 127, 255, cv2.THRESH_BINARY)
+
+# Find connected components
+_, imLabels = cv2.connectedComponents(imThresh)
+plt.imshow(imLabels)
+
+Display Individual Label
+# Display the labels
+nComponents = imLabels.max()
+
+displayRows = np.ceil(nComponents/3.0)
+plt.figure(figsize=[20,12])
+for i in range(nComponents+1):
+    plt.subplot(displayRows,3,i+1)
+    plt.imshow(imLabels==i)
+    if i == 0:
+        plt.title("Background, Component ID : {}".format(i))
+    else:
+        plt.title("Component ID : {}".format(i))
+
+```
+
 
 
 
