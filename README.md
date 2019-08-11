@@ -944,3 +944,24 @@ for cnt in contours:
 
 ```
 
+
+## Fitting Circle and Ellipse
+```
+Fitting a circle and/or an ellipse over the contour
+
+for cnt in contours:
+    # Fit a circle
+    ((x,y),radius) = cv2.minEnclosingCircle(cnt)
+    cv2.circle(image, (int(x),int(y)), int(round(radius)), (125,125,125), 2)
+    
+for cnt in contours:
+    # Fit an ellipse
+    # We can fit an ellipse only
+    # when our contour has minimum
+    # 5 points
+    if len(cnt) < 5:
+        continue
+    ellipse = cv2.fitEllipse(cnt)
+    cv2.ellipse(image, ellipse, (255,0,125), 2)
+
+```
