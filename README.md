@@ -852,7 +852,7 @@ CHAIN_APPROX_TC89_L1 - Approximation method used for finding contours of un-even
 CHAIN_APPROX_TC89_KCOS - Approximation method used for finding contours of un-even shapes
 
 Contours - Array of array of points
-Hierarchy - ContourNo, Next, Previous, First Child, Parent
+Hierarchy - Next, Previous, First Child, Parent
 
 approxPolyDP - approximate poly dynamic programming gives the points in the contour.
 
@@ -866,4 +866,81 @@ mode - Contour retrieval mode, ( RETR_EXTERNAL, RETR_LIST, RETR_CCOMP, RETR_TREE
 method - Contour approximation method. ( CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1 etc )
 offset - Optional offset by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context.
 
+contours, hierarchy = cv2.findContours(imageGray, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+print("Number of contours found = {}".format(len(contours)))
+print("\nHierarchy : \n{}".format(hierarchy))
+
 ```
+
+## Draw Contours
+```
+To draw the contours, cv2.drawContours function is used. It can also be used to draw any shape provided you have its boundary points. Its first argument is source image, second argument is the contours which should be passed as a Python list, third argument is index of contours (useful when drawing individual contour. To draw all contours, pass -1) and remaining arguments are color, thickness etc.
+
+cv2.drawContours(image, contours, -1, (0,255,0), 3);
+
+# Draw only the 3rd contour
+# Note that right now we do not know
+# the numbering of contour in terms of the shapes
+# present in the figure
+image = imageCopy.copy()
+cv2.drawContours(image, contours[2], -1, (0,0,255), 3);
+
+```
+
+
+## Contour Moments
+```
+Contour moments are used to find the center of an arbitary shape
+
+Image Moment is a particular weighted average of image pixel intensities, with the help of which we can find some specific properties of an image, like radius, area, centroid etc. To find the centroid of the image, we generally convert it to binary format and then find its center.
+
+for cnt in contours:
+    # We will use the contour moments
+    # to find the centroid
+    M = cv2.moments(cnt)
+    x = int(round(M["m10"]/M["m00"]))
+    y = int(round(M["m01"]/M["m00"]))
+    
+    # Mark the center
+    cv2.circle(image, (x,y), 10, (255,0,0), -1);
+
+C_X = m10/m00
+C_Y = m01/m00
+
+C_x is the x coordinate and C_y is the y coordinate of the centroid and M denotes the Moment.
+
+```
+
+## Area and Perimeter of a contour
+```
+To find the area and perimeter of a contour
+
+for index,cnt in enumerate(contours):
+    area = cv2.contourArea(cnt)
+    perimeter = cv2.arcLength(cnt, True)
+    print("Contour #{} has area = {} and perimeter = {}".format(index+1,area,perimeter))
+    
+```
+
+## Bounding boxes
+```
+There are 2 type of bounding boxes we can create around a contour:
+
+A vertical rectangle
+A rotated rectangle - This is the bounding box with the minimum area
+
+for cnt in contours:
+    # Vertical rectangle
+    x,y,w,h = cv2.boundingRect(cnt)
+    cv2.rectangle(image, (x,y), (x+w,y+h), (255,0,255), 2)
+
+for cnt in contours:
+    # Rotated bounding box
+    box = cv2.minAreaRect(cnt)
+    boxPts = np.int0(cv2.boxPoints(box))
+    # Use drawContours function to draw 
+    # rotated bounding box
+    cv2.drawContours(image, [boxPts], -1, (0,255,255), 2)
+
+```
+
