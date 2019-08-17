@@ -1046,3 +1046,133 @@ params.minInertiaRatio = 0.01
 detector = cv2.SimpleBlobDetector_create(params)
 
 ```
+
+
+## ColorSpaces
+```
+A color space is a representation of color using different attributes. The attributes can be the color tint (Hue), saturation and brightness or Red, Green and Blue or something else. The different attributes are represented along the axes of a 3-dimensional space, so that it is easier to describe them mathematically and find relations among the different color spaces
+
+It should be noted that the choice of color space depends largely on the problem you are trying to solve. Given a problem, you should always try and experiment with different color spaces for arriving at the desired solution
+
+plt.imshow(bgr[:,:,::-1])
+
+```
+
+
+## The RGB color space
+```
+The RGB color space is an additive color space in which Red, Green and Blue light rays are added in various proportions to produce different colors. It is the most commonly used color space in image processing.
+
+plt.figure(figsize=(20,15))
+plt.subplot(131)
+plt.imshow(bgr[:,:,0],cmap='gray')
+plt.title("Blue Channel");
+plt.subplot(132)
+plt.imshow(bgr[:,:,1],cmap='gray')
+plt.title("Green Channel");
+plt.subplot(133)
+plt.imshow(bgr[:,:,2],cmap='gray')
+plt.title("Red Channel");
+
+In the RGB color space, all three channels contain information about the color as well as brightness. It is better for some applications if we can separate the color component, also known as Chrominance , from the lightness or brightness component also known as Luminance
+```
+
+
+## HSV ColorSpace
+```
+This is one of the most popular color spaces used in image processing after the RGB color space. Its three components are :
+
+Hue - indicates the color / tint of the pixel
+
+Saturation - indicates the purity (or richness) of the color
+
+Value - indicates the amount of brightness of the pixel
+
+The HSV color space converts the RGB color space from cartesian coordinates (x, y, z) to cylindrical coordinates (ρ, φ, z). It is more intuitive than the RGB color space because it separates the color and brightness into different axes. This makes it easier for us to describe any color directly.
+
+hsvImage = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+
+plt.figure(figsize=(20,15))
+plt.subplot(131)
+plt.imshow(hsvImage[:,:,0],cmap='gray')
+plt.title("Hue");
+plt.subplot(132)
+plt.imshow(hsvImage[:,:,1],cmap='gray')
+plt.title("Saturation");
+plt.subplot(133)
+plt.imshow(hsvImage[:,:,2],cmap='gray')
+plt.title("Value");
+
+Hue 
+The Hue channel refers to the color and its values, ranging from 0 to 180 in OpenCV. Since the HSV color space is represented in a cylindrical coordinate system, the values for Hue wrap around 180. For example, the Hue for red color is near 180. So, some tints of red can wrap around 180 and have values around 0. This is evident from the middle (red) pepper in the figure above, which shows both very high (180) and low (0) Hue values for the red pepper.
+
+Saturation 
+Saturation refers to how pure the color is. Pure red has high saturation. Different shades of a color correspond to different saturation levels. Saturation of 0 corresponds to white color which indicates that the color shade is at the lowest or the color is simply absent.
+
+So, in the figure above, we can see that the green and red peppers are highly saturated, i.e. these colors are in their purest form. On the other hand, the yellow pepper has relatively lower saturation. With the Hue and Saturation channels known, we have a better idea about the color and tints or shades of color in our image.
+
+Value 
+Value refers to lightness or brightness. It indicates how dark or bright the color is. It also signifies the amount of light that might have fallen on the object. It is pretty clear from the original image and the Value channel that the red and yellow peppers are much brighter as compared to the green pepper.
+
+Hue controls the perception of color. It is represented as an angle where a hue of 0 is red, green is 120 degrees ( 60 in OpenCV ), and blue is at 240 degrees( 120 in OpenCV ). In OpenCV, Hue is goes from 0 to 180 intensities values where one grayscale intensity change represents 2 degrees.
+
+Because hue is angle, you get red color for both H = 0 and H = 360 ( or 180 in OpenCV's representation )
+
+When value is 0 it is black , when saturation is the image looks grayscale.
+
+```
+
+
+## YCrCb ColorSpace
+```
+The YCrCb color space is derived from the RGB color space. Its three components are :
+Y (Luma), derived from the RGB values of the image
+Cr = R - Y (how far is the red component from the Luma, also known as Red Difference)
+Cb = B - Y (how far is the blue component from the Luma, also known as Blue Difference)
+
+Let us convert the image from BGR to YCrCb and take a look at the three channels.
+
+ycbImage = cv2.cvtColor(bgr, cv2.COLOR_BGR2YCrCb)
+
+Observations 
+Y Channel looks similar to a grayscale image.
+Cr Channel indicates the amount of Red in the image, which is evident from the high values of the middle (red) pepper. Similarly,
+Cb indicates the amount of Blue in the image, which is why the blue background displays high values.
+
+plt.figure(figsize=(20,15))
+plt.subplot(1,3,1)
+plt.title("Y Channel")
+plt.imshow(ycbImage[:,:,0],cmap="gray")
+plt.subplot(1,3,2)
+plt.title("Cr Channel")
+plt.imshow(ycbImage[:,:,1],cmap="gray")
+plt.subplot(1,3,3)
+plt.title("Cb Channel")
+plt.imshow(ycbImage[:,:,2],cmap="gray")
+plt.show()
+
+```
+
+## The Lab color space
+```
+The Lab color space consists of :
+Lightness
+A (a color component ranging from Green to Magenta)
+B (a color component ranging from Blue to Yellow).
+The L channel encodes brightness, while the A and B channels encode color.
+The following code shows how to convert from BGR to Lab color space in OpenCV.
+
+labImage = cv2.cvtColor(bgr, cv2.COLOR_BGR2Lab)
+
+plt.figure(figsize=(20,15))
+plt.subplot(1,3,1)
+plt.title("L Channel")
+plt.imshow(labImage[:,:,0],cmap="gray")
+plt.subplot(1,3,2)
+plt.title("A Channel")
+plt.imshow(labImage[:,:,1],cmap="gray")
+plt.subplot(1,3,3)
+plt.title("B Channel")
+plt.imshow(labImage[:,:,2],cmap="gray")
+plt.show()
+```
