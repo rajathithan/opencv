@@ -1176,3 +1176,52 @@ plt.title("B Channel")
 plt.imshow(labImage[:,:,2],cmap="gray")
 plt.show()
 ```
+
+## Histograms
+```
+A histogram is a very important tool in Image processing. It is a graphical representation of the distribution of data. An image histogram gives a graphical representation of the tonal distribution in a digital image.
+
+the x-axis represents the different intensity values or range of intensity values ( also called bins ), which lie between 0 and 255, and
+the y-axis represents the number of times a particular intensity value occurs in the image.
+
+plt.hist() available in the matplotlib library for drawing the histogram.
+
+Function Syntax 
+hist, bins, patches =   plt.hist( x, bins=None, range=None, density=None, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, color=None, label=None, stacked=False, normed=None )
+Parameters
+
+There are many parameters in the function. Let us go over the most important and frequently used ones.
+
+Input
+
+x - source image as an array
+bins - number of bins
+color - color for plotting the histogram
+Output
+
+hist - histogram array
+bins - edges of bins
+
+================
+img = cv2.imread(filename)
+plt.figure(figsize=[20,10])
+plt.imshow(img[...,::-1])
+plt.axis('off')
+hsvImage = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+H, S, V = cv2.split(hsvImage)
+print(H)
+print(H.shape)
+# Remove unsaturated (white/gray) pixels 
+H_array = H[S > 10].flatten()
+
+print(H_array)
+print(H_array.shape)
+plt.figure(figsize=[20,10])
+plt.subplot(121);plt.imshow(img[...,::-1]);plt.title("Image");plt.axis('off')
+plt.subplot(122);plt.hist(H_array, bins=180, color='r');plt.title("Histogram")
+
+This is helpful in doing color based segmentation
+
+```
+
+
