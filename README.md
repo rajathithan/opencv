@@ -1258,3 +1258,95 @@ plt.figure(figsize=[20,10])
 plt.subplot(121);plt.imshow(img[...,::-1]);plt.title('Original Image')
 plt.subplot(122);plt.imshow(imSat[...,::-1]);plt.title('Desaturated Image');
 ```
+
+
+## Historgram Equalization - Contrast Enhancement
+```
+Histogram Equalization is a non-linear method for enhancing contrast in an image. We have already seen the theory in the video. Now, let's see how to perform histogram equalization using OpenCV using equalizeHist().
+
+equalizeHist() performs histogram equalization on a grayscale image. The syntax is given below.
+
+Function Syntax
+dst =   cv2.equalizeHist(   src[, dst]  )
+Parameters
+
+src - Source 8-bit single channel image.
+dst - Destination image of the same size and type as src .
+
+==================
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] = (50.0, 50.0)
+matplotlib.rcParams['image.cmap'] = 'gray'
+matplotlib.rcParams['axes.titlesize'] = 40
+matplotlib.rcParams['image.interpolation'] = 'bilinear'
+
+im = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+
+# Equalize histogram
+imEq = cv2.equalizeHist(im)
+
+#Display images
+plt.figure()
+
+ax = plt.subplot(1,2,1)
+plt.imshow(im, vmin=0, vmax=255)
+ax.set_title("Original Image")
+ax.axis('off')
+
+
+ax = plt.subplot(1,2,2)
+plt.imshow(imEq, vmin=0, vmax=255)
+ax.set_title("Histogram Equalized")
+ax.axis('off')
+
+Display Historgram
+==================
+
+we had used calcHist() to calculate histogram. Matplotlib provides an alternative way which has a slightly better syntax
+
+plt.figure(figsize=(30,10))
+plt.subplot(1,2,1)
+plt.hist(im.ravel(),256,[0,256]); 
+
+plt.subplot(1,2,2)
+plt.hist(imEq.ravel(),256,[0,256]); 
+plt.show()
+```
+
+
+## Histogram Equalization on Color Images
+```
+The right way to perform histogram equalization on color images is to transform the images to a space like the HSV colorspace where colors/hue/tint is separated from the intensity.
+
+These are the steps involved
+
+Tranform the image to HSV colorspace.
+Perform histogram equalization only on the V channel.
+Transform the image back to RGB colorspace.
+
+im = cv2.imread(filename)
+
+# Convert to HSV 
+imhsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+
+# Perform histogram equalization only on the V channel
+imhsv[:,:,2] = cv2.equalizeHist(imhsv[:,:,2])
+
+# Convert back to BGR format
+imEq = cv2.cvtColor(imhsv, cv2.COLOR_HSV2BGR)
+
+#Display images
+plt.figure()
+
+ax = plt.subplot(1,2,1)
+plt.imshow(im[:,:,::-1], vmin=0, vmax=255)
+ax.set_title("Original Image")
+ax.axis('off')
+
+
+ax = plt.subplot(1,2,2)
+plt.imshow(imEq[:,:,::-1], vmin=0, vmax=255)
+ax.set_title("Histogram Equalized")
+ax.axis('off')
+```
