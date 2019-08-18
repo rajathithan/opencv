@@ -1350,3 +1350,49 @@ plt.imshow(imEq[:,:,::-1], vmin=0, vmax=255)
 ax.set_title("Histogram Equalized")
 ax.axis('off')
 ```
+
+
+## Contrast Limited Adaptive Histogram Equalization (CLAHE) 
+```
+Histogram equalization uses the pixels of the entire image to improve contrast. While this may look good in many cases, sometimes we may want to enhance the contrast locally so the image does not looks more natural and less dramatic.
+
+========================
+
+im = cv2.imread(filename)
+
+# Convert to HSV 
+imhsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+imhsvCLAHE = imhsv.copy()
+
+# Perform histogram equalization only on the V channel
+imhsv[:,:,2] = cv2.equalizeHist(imhsv[:,:,2])
+
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+imhsvCLAHE[:,:,2] = clahe.apply(imhsvCLAHE[:,:,2])
+
+# Convert back to BGR format
+imEq = cv2.cvtColor(imhsv, cv2.COLOR_HSV2BGR)
+imEqCLAHE = cv2.cvtColor(imhsvCLAHE, cv2.COLOR_HSV2BGR)
+
+
+#Display images
+plt.figure(figsize=(40,40))
+
+ax = plt.subplot(1,3,1)
+plt.imshow(im[:,:,::-1], vmin=0, vmax=255)
+ax.set_title("Original Image")
+ax.axis('off')
+
+ax = plt.subplot(1,3,2)
+plt.imshow(imEq[:,:,::-1], vmin=0, vmax=255)
+ax.set_title("Histogram Equalized")
+ax.axis('off')
+
+ax = plt.subplot(1,3,3)
+plt.imshow(imEqCLAHE[:,:,::-1], vmin=0, vmax=255)
+ax.set_title("CLAHE")
+ax.axis('off')
+
+CLAHE performs stretching of values locally . The final image will be more close to the original image with required contrast enhancement
+
+```
