@@ -1448,3 +1448,17 @@ plt.title("Warming filter output")
 plt.show()
 
 ```
+
+
+## Signal Processing Jargons
+```
+Image Patch: An image patch is simply a small (3x3, 5x5 … ) region of the image centered around a pixel.
+
+Low Frequency Information : An image patch is said to have low frequency information if it is smooth and does not have a lot of texture.
+
+High Frequency Information : An image patch is said to have high frequency information if it has a lot of texture (edges, corners etc.).
+
+Low Pass Filtering : This is essentially image blurring / smoothing. It you blur an image, you smooth out the texture. As the name suggests, low pass filtering lets lower frequency information pass and blocks higher frequency information.
+
+High Pass Filtering : This is essentially a sharpening and edge enhancement type of operation. As the name suggests, low frequency information is suppressed and high frequency information is preserved in high pass filtering.
+```
