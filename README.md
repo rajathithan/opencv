@@ -1396,3 +1396,55 @@ ax.axis('off')
 CLAHE performs stretching of values locally . The final image will be more close to the original image with required contrast enhancement
 
 ```
+
+
+## Look Up table
+```
+Look-up tables (LUTs) are very common in custom filters in which two pixels with the same value in the input involves the same value in the output too. An LUT transformation assigns a new pixel value to each pixel in the input image according to the values given by a table. In this table, the index represents the input intensity value and the content of the cell given by the index represents the corresponding output value. As the transformation is actually computed for each possible intensity value, this results in a reduction in the time needed to apply the transformation over an image (images typically have more pixels than the number of intensity values).
+
+The LUT(InputArray src, InputArray lut, OutputArray dst, int interpolation = 0) OpenCV function applies a look-up table transformation over an 8-bit signed or an src unsigned image. Thus, the table given in the lut parameter contains 256 elements. 
+
+```
+
+
+## Color tone Adjustment using Curves
+```
+Curves are nothing increasing / Decreasing certain pixel points in the R channel and B channel , to get photoshop effects, We increase / decrease certain pixel points and use interpolation to fill up the respective values from 0 to 256.
+
+( Most ridiculous explanation - I can understand this, i hope you can too)
+f(x1) = input function Has 10 values, f(y1) = output values based on f(x1), now f(x1') = Uses the same input function has 100 values, now to identify f(y1') use np.interp as you dont know the output function to derive f(y1')
+==================================
+Determine the pixel points for rchannel and bchannel
+
+# pivot points for X-Coordinates
+originalValue = np.array([0, 50, 100, 150, 200, 255])
+
+# Changed points on Y-axis for each channel
+rCurve = np.array([0, 80, 150, 190, 220, 255])
+bCurve = np.array([0, 20,  40,  75, 150, 255])
+
+# Create a LookUp Table
+fullRange = np.arange(0,256)
+rLUT = np.interp(fullRange, originalValue, rCurve )
+bLUT = np.interp(fullRange, originalValue, bCurve )
+
+Use the lookup table and modify the rchannel and the bchannel in the original image. 
+
+# Get the blue channel and apply the mapping
+bChannel = img[:,:,0]
+bChannel = cv2.LUT(bChannel, bLUT)
+img[:,:,0] = bChannel
+
+# Get the red channel and apply the mapping
+rChannel = img[:,:,2]
+rChannel = cv2.LUT(rChannel, rLUT)
+img[:,:,2] = rChannel
+
+# show and save the ouput
+combined = np.hstack([original,img])
+
+plt.imshow(combined[:,:,::-1])
+plt.title("Warming filter output")
+plt.show()
+
+```
