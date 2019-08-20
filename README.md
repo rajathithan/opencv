@@ -1462,3 +1462,53 @@ Low Pass Filtering : This is essentially image blurring / smoothing. It you blur
 
 High Pass Filtering : This is essentially a sharpening and edge enhancement type of operation. As the name suggests, low frequency information is suppressed and high frequency information is preserved in high pass filtering.
 ```
+
+
+## Convolution
+```
+Convolution is the basis of all linear filters, to sharp , blur or to detect the edges of an image, we can use convolution. 
+
+Boundary Conditions:
+
+Ignore the boundary pixels : If we discount the boundary pixels, the output image will be slightly smaller than the input image.
+
+Zero padding : We can pad the input image with zeros at the boundary pixels to make it larger and then perform convolution.
+
+Replicate border : The other option is to replicate the boundary pixels of the input image and then perform the convolution operation on this larger image.
+
+Reflect border : The preferred option is to reflect the border about the boundary. Reflecting ensures a smooth intensity transition of pixels at the boundary.
+
+By default OpenCV uses border type BORDER_REFLECT_101 which is the same as option 4
+
+filter2D. The basic usage is given below.
+
+Function Syntax
+dst =   cv.filter2D(    src, ddepth, kernel[, dst[, anchor[, delta[, borderType]]]]
+Parameters
+
+src input image.
+dst output image of the same size and the same number of channels as src.
+ddepth desired depth of the destination image.
+kernel convolution kernel (or rather a correlation kernel), a single-channel floating point matrix; if you want to apply different kernels to different channels, split the image into separate color planes using split and process them individually.
+anchor anchor of the kernel that indicates the relative position of a filtered point within the kernel; the anchor should lie within the kernel; default value (-1,-1) means that the anchor is at the kernel center.
+delta optional value added to the filtered pixels before storing them in dst.
+borderType pixel extrapolation method.
+
+filter2D is used to perform the convolution. Notice, you do not have to explicitly allocate space for the filtered image. It is done automatically for you inside filter2D.
+
+The second parameter (depth) is set to -1, which means the bit-depth of the output image is the same as the input image. So if the input image is of type uint8, the output image will also be of the same type.
+
+kernel_size = 5
+# Create a 5*5 kernel with all elements equal to 1
+kernel = np.ones((kernel_size, kernel_size), dtype=np.float32) / kernel_size**2
+
+# Print Kernel
+print (kernel)
+
+result = cv2.filter2D(image, -1, kernel, (-1, -1), delta=0, borderType=cv2.BORDER_DEFAULT)
+
+plt.figure(figsize=[20,10])
+plt.subplot(121);plt.imshow(image[...,::-1]);plt.title("Original Image")
+plt.subplot(122);plt.imshow(result[...,::-1]);plt.title("Convolution Result")
+
+```
