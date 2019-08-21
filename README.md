@@ -1537,3 +1537,46 @@ img = cv2.imread(filename)
 dst1=cv2.blur(img,(3,3),(-1,-1))
 
 ```
+
+
+## Gausian Blur
+```
+A Gaussian Blur kernel,  weights the contribution of a neighboring pixel based on the distance of the pixel from the center pixel
+
+Unlike the box kernel, the Gaussian kernel is not uniform. The middle pixel gets the maximum weight while the pixels farther away are given less weight.
+
+An image blurred using the Gaussian kernel looks less blurry compared to a box kernel of the same size. Small amount of Gaussian blurring is frequently used to remove noise from an image. It is also applied to the image prior to a noise sensitive image filtering operations. For example, the Sobel kernel used for calculating the derivative of an image is a combination of a Gaussian kernel and a finite difference kernel.
+
+
+Function Syntax
+dst =   cv2.GaussianBlur(   src, ksize, sigmaX[, dst[, sigmaY[, borderType]]]   )
+Parameters
+
+src input image; the image can have any number of channels, which are processed independently, but the depth should be CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+dst output image of the same size and type as src.
+ksize Gaussian kernel size. ksize.width and ksize.height can differ but they both must be positive and odd. Or, they can be zero's and then they are computed from sigma.
+sigmaX Gaussian kernel standard deviation in X direction.
+sigmaY Gaussian kernel standard deviation in Y direction; if sigmaY is zero, it is set to be equal to sigmaX, if both sigmas are zeros, they are computed from ksize.width and ksize.height, respectively; to fully control the result regardless of possible future modifications of all this semantics, it is recommended to specify all of ksize, sigmaX, and sigmaY.
+borderType pixel extrapolation method.
+
+Note:
+In most cases, sigmaX and sigmaY are the same. But it is fun to experiment with different values of sigmaX and sigmaY and see the results.
+
+It is much easier to control the Gaussian blurring using just one parameter. Usually, we simply provide the kernel size, and let OpenCV automatically calculate the optimum sigma for based on the following equation.
+
+𝜎=0.3⋅((size−1)⋅0.5−1)+0.8
+ 
+If you set sigmaY equal to zero, it is set to sigmaX internally by OpenCV. If both sigmaX and sigmaY are zero, the above formula is used to calculate  𝜎 .
+
+==================
+
+In the following code, Gaussian blur is applied using two different kernels.
+
+The first is a 5x5 kernel with sigmaX and sigmaY set to 0. OpenCV automatically calculates sigma when it is set to 0.
+
+The second is a 25x25 kernel with sigmaX and sigmaY set to 50.
+
+# Apply gaussian blur
+dst1=cv2.GaussianBlur(img,(5,5),0,0)
+dst2=cv2.GaussianBlur(img,(25,25),50,50)
+```
