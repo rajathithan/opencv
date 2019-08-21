@@ -1580,3 +1580,32 @@ The second is a 25x25 kernel with sigmaX and sigmaY set to 50.
 dst1=cv2.GaussianBlur(img,(5,5),0,0)
 dst2=cv2.GaussianBlur(img,(25,25),50,50)
 ```
+
+
+## Median Blur
+```
+Replace the center pixel with the median value of the neighborhood. This is mostly used for images with salt and pepper grain. 
+
+Function Syntax
+dst =   cv2.medianBlur( src, ksize[, dst]   )
+Parameters
+
+src input 1-, 3-, or 4-channel image; when ksize is 3 or 5, the image depth should be CV_8U, CV_16U, or CV_32F, for larger aperture sizes, it can only be CV_8U.
+dst destination array of the same size and type as src.
+ksize aperture linear size; it must be odd and greater than 1, for example: 3, 5,7, ...
+
+=========================
+
+img = cv2.imread("saltandpepper.png")
+# Defining the kernel size
+kernelSize = 7
+
+# Performing Median Blurring and store it in numpy array "medianBlurred"
+medianBlurred = cv2.medianBlur(img,kernelSize)
+
+# Display the original and median blurred image
+plt.figure(figsize=[20,10])
+plt.subplot(121);plt.imshow(img[...,::-1]);plt.title("Original Image")
+plt.subplot(122);plt.imshow(medianBlurred[...,::-1]);plt.title("Median Blur Result : KernelSize = 7")
+
+```
