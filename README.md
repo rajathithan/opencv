@@ -1512,3 +1512,28 @@ plt.subplot(121);plt.imshow(image[...,::-1]);plt.title("Original Image")
 plt.subplot(122);plt.imshow(result[...,::-1]);plt.title("Convolution Result")
 
 ```
+
+
+## Box Blur
+```
+Box blur - replaces the center pixel by the average of all pixels in the neighborhood
+
+Box Blur in OpenCV
+The simplest usage of the blur function is given below
+
+Function Syntax
+dst =   cv2.blur(   src, ksize[, dst[, anchor[, borderType]]]   )
+Parameters
+
+src input image; it can have any number of channels, which are processed independently, but the depth should be CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
+dst output image of the same size and type as src.
+ksize blurring kernel size.
+anchor anchor point; default value Point(-1,-1) means that the anchor is at the kernel center.
+borderType border mode used to extrapolate pixels outside of the image.
+======
+
+img = cv2.imread(filename)
+
+dst1=cv2.blur(img,(3,3),(-1,-1))
+
+```
