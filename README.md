@@ -1609,3 +1609,46 @@ plt.subplot(121);plt.imshow(img[...,::-1]);plt.title("Original Image")
 plt.subplot(122);plt.imshow(medianBlurred[...,::-1]);plt.title("Median Blur Result : KernelSize = 7")
 
 ```
+
+
+## Bilateral Filtering
+```
+Bilateral filtering is an edge preserving filter, where the center pixel is modified not by the intensity or spatial closeness of the whole neighborhood, rather the decision is taken based on the pixels in center and right columns. The spatial difference and the intensity difference are determined to change the value of the center pixel
+
+If the neighborhood pixels are edges, the difference in intensity  (𝐼𝑝−𝐼𝑞)  will be higher. Since the Gaussian is a decreasing function,  𝐺𝜎𝑟(𝐼𝑝−𝐼𝑞)  will have lower weights for higher values. Hence, the smoothing effect will be lower for such pixels, preserving the edges.
+
+intensity & spaitial differences are controlled using the parameter  𝜎𝑟 & 𝜎s.
+
+ Bilateral filter in OpenCV.
+
+Function Syntax
+dst =   cv2.bilateralFilter(    src, d, sigmaColor, sigmaSpace[, dst[, borderType]] )
+Parameters
+
+src Source 8-bit or floating-point, 1-channel or 3-channel image.
+dst Destination image of the same size and type as src .
+d Diameter of each pixel neighborhood that is used during filtering. If it is non-positive, it is computed from sigmaSpace.
+sigmaColor Filter sigma in the color space. A larger value of the parameter means that farther colors within the pixel neighborhood (see sigmaSpace) will be mixed together, resulting in larger areas of semi-equal color.
+sigmaSpace Filter sigma in the coordinate space. A larger value of the parameter means that farther pixels will influence each other as long as their colors are close enough (see sigmaColor ). When d>0, it specifies the neighborhood size regardless of sigmaSpace. Otherwise, d is proportional to sigmaSpace.
+borderType border mode used to extrapolate pixels outside of the image,
+
+============
+
+# diameter of the pixel neighbourhood used during filtering
+dia=15;
+
+# Larger the value the distant colours will be mixed together 
+# to produce areas of semi equal colors
+sigmaColor=80
+
+# Larger the value more the influence of the farther placed pixels 
+# as long as their colors are close enough
+sigmaSpace=80
+
+#Apply bilateralFilter
+result = cv2.bilateralFilter(img, dia, sigmaColor, sigmaSpace)
+
+plt.figure(figsize=[20,10])
+plt.subplot(121);plt.imshow(img[...,::-1]);plt.title("Original Image")
+plt.subplot(122);plt.imshow(result[...,::-1]);plt.title("Bilateral Blur Result")
+```
