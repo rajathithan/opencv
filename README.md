@@ -1652,3 +1652,69 @@ plt.figure(figsize=[20,10])
 plt.subplot(121);plt.imshow(img[...,::-1]);plt.title("Original Image")
 plt.subplot(122);plt.imshow(result[...,::-1]);plt.title("Bilateral Blur Result")
 ```
+
+
+## Prewitt filter
+```
+To make gradient calculations even more robust and noisefree, the image can be Gaussian-blurred slightly before applying a gradient filter. As you know, blurring is also a convolution operation. So applying a Gaussian blur filter before applying the gradient filter would require two convolution operations.
+
+calculate the gradient over a 3x3 patch instead of over a line. The filters below provide a slightly less noisy version of the gradients in the x- and y-directions.
+
+img = cv2.imread('messi5.jpg')
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img_gaussian = cv2.GaussianBlur(gray,(3,3),0)
+
+#prewitt
+kernelx = np.array([[1,1,1],[0,0,0],[-1,-1,-1]])
+kernely = np.array([[-1,0,1],[-1,0,1],[-1,0,1]])
+img_prewittx = cv2.filter2D(img_gaussian, -1, kernelx)
+img_prewitty = cv2.filter2D(img_gaussian, -1, kernely)
+
+```
+
+
+## Sobel Filter
+```
+Sobel filter combines the two convolution operations into one.
+
+Sobel function for calculating the X and Y Gradients. Below, you can see the most common usage.
+
+Function Syntax
+dst =   cv2.Sobel(  src, ddepth, dx, dy[, dst[, ksize[, scale[, delta[, borderType]]]]] )
+Parameters
+
+src input image.
+dst output image of the same size and the same number of channels as src .
+ddepth output image depth,in the case of 8-bit input images it will result in truncated derivatives.
+dx order of the derivative x.
+dy order of the derivative y.
+ksize size of the extended Sobel kernel; it must be 1, 3, 5, or 7.
+scale optional scale factor for the computed derivative values; by default, no scaling is applied.
+delta optional delta value that is added to the results prior to storing them in dst.
+borderType pixel extrapolation method.
+
+The X and Y Gradients are calculated using the Sobel function. Note that the depth of the output images is set to CV_32F because gradients can take negative values.
+
+# Apply sobel filter along x direction
+sobelx = cv2.Sobel(image, cv2.CV_32F, 1, 0)
+# Apply sobel filter along y direction
+sobely = cv2.Sobel(image,cv2.CV_32F,0,1)
+
+# Normalize image for display
+cv2.normalize(sobelx, 
+                dst = sobelx, 
+                alpha = 0, 
+                beta = 1, 
+                norm_type = cv2.NORM_MINMAX, 
+                dtype = cv2.CV_32F)
+cv2.normalize(sobely, 
+                dst = sobely, 
+                alpha = 0, 
+                beta = 1, 
+                norm_type = cv2.NORM_MINMAX, 
+                dtype = cv2.CV_32F)
+```
+
+
+
+```
