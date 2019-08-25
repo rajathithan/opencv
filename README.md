@@ -1716,5 +1716,27 @@ cv2.normalize(sobely,
 ```
 
 
+## Laplacian Filter 
+```
+Laplacian filter is a second order derivative filter, it is very senstive noise, so it needs to be blurred (smoothed) out before usage.
+
+always note that summing and averaging operations are less affected by noise, and differencing operations are greatly affected by noise
+
+===========
+
+kernelSize = 3
+
+# Applying laplacian
+img1 = cv2.GaussianBlur(img,(3,3),0,0)
+laplacian = cv2.Laplacian(img1, cv2.CV_32F, ksize = kernelSize, 
+                            scale = 1, delta = 0)
+                            
+# Normalize results
+cv2.normalize(laplacian, 
+                dst = laplacian, 
+                alpha = 0, 
+                beta = 1, 
+                norm_type = cv2.NORM_MINMAX, 
+                dtype = cv2.CV_32F)
 
 ```
