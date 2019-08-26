@@ -1740,3 +1740,35 @@ cv2.normalize(laplacian,
                 dtype = cv2.CV_32F)
 
 ```
+
+
+## Sharpening Filter
+```
+
+Step 1: Blur the image to smooth out texture. The blurred image contains low frequency information of the original image. Let  𝐼 be the original image and  𝐼𝑏  be the blurred image.
+
+Step 2: Obtain the high frequency information of the original image by subtracting the blurred image from the original image.
+
+Step 3: Now, put back the high frequency information back in the image and control the amount using a parameter. The final sharpened image is therefore,
+
+# Sharpen kernel
+sharpen = np.array((
+    [0, -1, 0],
+    [-1, 5, -1],
+    [0, -1, 0]), dtype="int")
+Next, filter2D is used to perform the convolution.
+
+The third parameter (depth) is set to -1 which means the bit-depth of the output image is the same as the input image. So if the input image is of type CV_8UC3
+
+# Using 2D filter by applying the sharpening kernel
+sharpenOutput = cv2.filter2D(image, -1, sharpen)
+
+plt.figure(figsize=[20,10])
+plt.subplot(121);plt.imshow(image[...,::-1]);plt.title("Original Image")
+plt.subplot(122);plt.imshow(sharpenOutput[...,::-1]);plt.title("Sharpening Result")
+
+```
+
+
+𝐼𝑠=𝐼+𝛼(𝐼âˆ′𝐼𝑏)
+```
