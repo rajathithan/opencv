@@ -1772,5 +1772,77 @@ plt.subplot(122);plt.imshow(sharpenOutput[...,::-1]);plt.title("Sharpening Resul
 ```
 
 
+## Canny Edge filter
+```
+Canny edge detection is the most widely-used edge detector. For many of the applications that require edge detection, Canny edge detection is sufficient.
+
+Canny edge detection has the following three steps:
+
+Gradient calculations: Edges are pixels where intensity changes abruptly. From previous modules, we know that the magnitude of gradient is very high at edge pixels. Therefore, gradient calculation is the first step in Canny edge detection.
+
+Non-maxima suppression: In the real world, the edges in an image are not sharp. The magnitude of gradient is very high not only at the real edge location, but also in a small neighborhood around it. Ideally, we want an edge to be represented by a single, pixel-thin contour. Simply thresholding the gradient leads to a fat contour that is several pixels thick. Fortunately, this problem can be eliminated by selecting the pixel with maximum gradient magnitude in a small neighborhood (say 3x3 neighborhood) of every pixel in the gradient image. The name non-maxima suppression comes from the fact that we eliminate (i.e. set to zero) all gradients except the maximum one in small 3x3 neighborhoods over the entire image.
+
+Hysteresis thresholding: After non-maxima suppression, we could threshold the gradient image to obtain a new binary image which is black in all places except for pixels where the gradient is very high. This kind of thresholding would naively exclude a lot of edges because, in real world images, edges tend to fade in and out along their length. For example, an edge may be strong in the middle but fade out at the two ends. To fix this problem, Canny edge detection uses two thresholds. First, a higher threshold is used to select pixels with very high gradients. We say these pixels have a strong edge. Second, a lower threshold is used to obtain new pixels that are potential edge pixels. We say these pixels have a weak edge. A weak edge pixel can be re-classified as a strong edge if one of its neighbor is a strong edge. The weak edges that are not reclassified as strong are dropped from the final edge map.
+
+Canny edge detector in OpenCV is shown below.
+
+Function Syntax
+edges   =   cv.Canny(   dx, dy, threshold1, threshold2[, edges[, L2gradient]]   )
+Parameters
+
+dx 16-bit x derivative of input image (CV_16SC1 or CV_16SC3).
+dy 16-bit y derivative of input image (same type as dx).
+edges output edge map; single channels 8-bit image, which has the same size as image .
+threshold1 first threshold for the hysteresis procedure.
+threshold2 second threshold for the hysteresis procedure.
+L2gradient a flag, indicating whether a more accurate L2 norm =âˆš(dI/dx)2+(dI/dy)2 should be used to calculate the image gradient magnitude ( L2gradient=true ), or whether the default L1 norm =|dI/dx|+|dI/dy| is enough ( L2gradient=false ).
+If you want better accuracy at the expense of speed, you can set the L2gradient flag to true.
+
+=============
+
+lowThreshold = 50
+highThreshold = 100
+
+maxThreshold = 1000
+
+apertureSizes = [3, 5, 7]
+maxapertureIndex = 2
+apertureIndex = 0
+
+blurAmount = 0
+maxBlurAmount = 20
+
+The function applyCanny is called whenever any trackbar value is changed. The image is first blurred. The amount of blur depends on blurAmount. A Sobel apertureSize (3, 5 or 7) is chosen based on the trackbar value. Finally, the Canny function is called and results are displayed.
+
+def applyCanny():
+    # Blur the image before edge detection
+    if(blurAmount > 0):
+        blurredSrc = cv2.GaussianBlur(src, 
+                        (2 * blurAmount + 1, 2 * blurAmount + 1), 0);
+    else:
+        blurredSrc = src.copy()
+
+    # Canny requires aperture size to be odd
+    apertureSize = apertureSizes[apertureIndex];
+
+    # Apply canny to detect the images
+    edges = cv2.Canny( blurredSrc, 
+                        lowThreshold, 
+                        highThreshold, 
+                        apertureSize = apertureSize )
+    plt.imshow(edges[...,::-1])
+ 
+lowThreshold : Keeping all other parameters constant, when you lower the lowThreshold, broken edges tend to get connected. If you increase it, continuous edges may break.
+
+highThreshold : Keeping all other parameters constant, when you increase highThreshold, fewer edges are detected. On the other hand, decreasing highThreshold leads to more edges.
+
+apertureSize : Increasing the aperture size leads to many more edges. This is simply because larger Sobel kernels return larger gradient values. Low and high thresholds should be changed when aperture size is changed.
+
+blurAmount : When the blur amount is increased, noise in the image is reduced, and spurious edges are removed. As a result, fewer edges are detected.
+```
+
+
+```
+
 
 
