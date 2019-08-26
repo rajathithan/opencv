@@ -1751,6 +1751,8 @@ Step 2: Obtain the high frequency information of the original image by subtracti
 
 Step 3: Now, put back the high frequency information back in the image and control the amount using a parameter. The final sharpened image is therefore,
 
+𝐼𝑠=𝐼+𝛼(𝐼âˆ′𝐼𝑏)
+
 # Sharpen kernel
 sharpen = np.array((
     [0, -1, 0],
@@ -1770,5 +1772,5 @@ plt.subplot(122);plt.imshow(sharpenOutput[...,::-1]);plt.title("Sharpening Resul
 ```
 
 
-𝐼𝑠=𝐼+𝛼(𝐼âˆ′𝐼𝑏)
-```
+
+
