@@ -1931,7 +1931,7 @@ for line in lines:
 plt.imshow(img[:,:,::-1])
 ```
 
-## 	Hough Cicrles
+## 	Hough Circles
 ```
 we require three parameters:
 
@@ -1982,5 +1982,9 @@ if circles is not None:
         # Draw inner circle
         cv2.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
 plt.imshow(img[:,:,::-1])
+
+==============
+
+circles = cv2.HoughCircles(img_blur, cv2.HOUGH_GRADIENT, 1, 100, param1=250, param2=10, minRadius=50, maxRadius=115)
 
 ```
