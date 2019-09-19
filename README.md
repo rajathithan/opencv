@@ -1988,3 +1988,155 @@ plt.imshow(img[:,:,::-1])
 circles = cv2.HoughCircles(img_blur, cv2.HOUGH_GRADIENT, 1, 100, param1=250, param2=10, minRadius=50, maxRadius=115)
 
 ```
+
+
+## HDR Imaging
+```
+High Dynamic Range (HDR) image using multiple images taken with different exposure settings which is better than each one of these images
+It actually takes 3 images at three different exposures. The images are taken in quick succession so there is almost no movement between the three shots. The three images are then combined to produce the HDR image
+
+Step 1: Capture multiple images with different exposures
+========================================================
+We load the 4 images and create 2 lists:
+
+times : contains the exposure times for the images
+images : contains the images
+
+def readImagesAndTimes():
+  # List of exposure times
+  times = np.array([ 1/30.0, 0.25, 2.5, 15.0 ], dtype=np.float32)
+   
+  # List of image filenames
+  filenames = ["img_0.033.jpg", "img_0.25.jpg", "img_2.5.jpg", "img_15.jpg"]
+  images = []
+  for filename in filenames:
+    im = cv2.imread(DATA_PATH + "images/" + filename)
+    images.append(im)
+   
+  return images, times
+
+images, times = readImagesAndTimes()
+
+Step 2: Align Images
+====================
+
+OpenCV provides an easy way to align these images using AlignMTB. This algorithm converts all the images to median threshold bitmaps (MTB). An MTB for an image is calculated by assigning the value 1 to pixels brighter than median luminance and 0 otherwise. An MTB is invariant to the exposure time. Therefore, the MTBs can be aligned without requiring us to specify the exposure time.
+
+MTB based alignment is performed using the following lines of code in OpenCV.Specifically, we create an object of AlignMTB class and apply the alignment function (process) on the set of images we loaded earlier.
+
+cv.AlignMTB.process(    src, dst, times, response   )
+Parameters
+
+src - vector of input images ( Input )
+dst - vector of aligned images ( Output )
+
+# Align input images
+alignMTB = cv2.createAlignMTB()
+alignMTB.process(images, images)
+
+Step 3: Recover the Camera Response Function 
+============================================
+
+CRF is done using just two lines of code in OpenCV using CalibrateDebevec or CalibrateRobertson. In this module we will use CalibrateDebevec.
+
+Consider just ONE pixel at some location (x,y) of the images. If the CRF was linear, the pixel value would be directly proportional to the exposure time unless the pixel is too dark ( i.e. nearly 0 ) or too bright ( i.e. nearly 255) in a particular image. We can filter out these bad pixels ( too dark or too bright ), and estimate the brightness at a pixel by dividing the pixel value by the exposure time and then averaging this brightness value across all images where the pixel is not bad ( too dark or too bright ). We can do this for all pixels and obtain a single image where all pixels are obtained by averaging “good” pixels.
+
+Function Syntax 
+CRFObject = cv2.createCalibrateDebevec()
+dst =   CRFObject.process(  src, times[, dst]   )
+Parameters
+
+src - vector of input images
+times - vector of exposure time values for each image
+dst ( optional ) - 256x1 matrix with inverse camera response function
+
+# Obtain Camera Response Function (CRF)
+calibrateDebevec = cv2.createCalibrateDebevec()
+responseDebevec = calibrateDebevec.process(images, times)
+
+
+# Plot CRF
+x = np.arange(256, dtype=np.uint8)
+y = np.squeeze(responseDebevec)
+
+plt.figure(figsize=(15,8))
+plt.plot(x, y[:,0],'r'  , x, y[:,1],'g', x, y[:,2],'b');
+plt.title("CRF")
+plt.xlabel("Measured Intensity")
+plt.ylabel("Calibrated Intensity")
+
+Step 4: Merge Images 
+====================
+
+Once the CRF has been estimated, we can merge the exposure images into one HDR image using MergeDebevec.
+
+# Merge images into an HDR linear image
+mergeDebevec = cv2.createMergeDebevec()
+hdrDebevec = mergeDebevec.process(images, times, responseDebevec)
+# Save HDR image.
+cv2.imwrite("hdrDebevec.hdr", hdrDebevec)
+
+Step 5: Tone mapping
+====================
+
+The process of converting a High Dynamic Range (HDR) image to an 8-bit per channel image while preserving as much detail as possible is called Tone mapping.
+
+Some of the common parameters of the different tone mapping algorithms are listed below.
+
+gamma : This parameter compresses the dynamic range by applying a gamma correction. When gamma is equal to 1, no correction is applied. A gamma of less than 1 darkens the image, while a gamma greater than 1 brightens the image.
+
+saturation : This parameter is used to increase or decrease the amount of saturation. When saturation is high, the colors are richer and more intense. Saturation value closer to zero, makes the colors fade away to grayscale.
+
+contrast : Controls the contrast ( i.e. log (maxPixelValue/minPixelValue) ) of the output image. Let us explore the four tone mapping algorithms available in OpenCV.
+
+Drago Tonemap 
+The parameters for Drago Tonemap are shown below
+
+retval  =   cv.createTonemapDrago(  [, gamma[, saturation[, bias]]] )
+Here, bias is the value for bias function in [0, 1] range. Values from 0.7 to 0.9 usually give the best results. The default value is 0.85.
+
+The Python code is shown below. The parameters were obtained by trial and error. The final output is multiplied by 3 just because it gave the most pleasing results to me. You should play around with the parameters and see how the output changes.
+
+# Tonemap using Drago's method to obtain 24-bit color image
+tonemapDrago = cv2.createTonemapDrago(1.0, 0.7)
+ldrDrago = tonemapDrago.process(hdrDebevec)
+ldrDrago = 3 * ldrDrago
+plt.imshow(ldrDrago[:,:,::-1])
+
+Reinhard Tonemap 
+The parameters for Reinhard Tonemap are shown below.
+
+retval  =   cv.createTonemapReinhard(   [, gamma[, intensity[, light_adapt[, color_adapt]]]]    )
+parameters
+
+intensity should be in the [-8, 8] range. Greater intensity value produces brighter results.
+
+light_adapt controls the light adaptation and is in the [0, 1] range. A value of 1 indicates adaptation based only on pixel value and a value of 0 indicates global adaptation. An in-between value can be used for a weighted combination of the two.
+
+color_adapt controls chromatic adaptation and is in the [0, 1] range. The channels are treated independently if the value is set to 1 and the adaptation level is the same for every channel if the value is set to 0. An in-between value can be used for a weighted combination of the two.
+
+# Tonemap using Reinhard's method to obtain 24-bit color image
+tonemapReinhard = cv2.createTonemapReinhard(1.5, 0,0,0)
+ldrReinhard = tonemapReinhard.process(hdrDebevec)
+plt.imshow(ldrReinhard[:,:,::-1])
+
+Mantiuk Tonemap 
+The parameters for Mantinuk Tonemap are shown below.
+
+retval  =   cv.createTonemapMantiuk(    [, gamma[, scale[, saturation]]]    )
+The parameter scale is the contrast scale factor. Values from 0.6 to 0.9 produce best results.
+
+# Tonemap using Mantiuk's method to obtain 24-bit color image
+tonemapMantiuk = cv2.createTonemapMantiuk(2.2,0.85, 1.2)
+ldrMantiuk = tonemapMantiuk.process(hdrDebevec)
+ldrMantiuk = np.clip(3 * ldrMantiuk,0,1)
+plt.imshow(ldrMantiuk[:,:,::-1])
+
+plt.figure(figsize=[20,10])
+plt.subplot(131);plt.imshow(ldrDrago[:,:,::-1]);plt.title("HDR using Drago Tone Mapping");plt.axis('off')
+plt.subplot(132);plt.imshow(ldrMantiuk[:,:,::-1]);plt.title("HDR using Mantiuk Tone Mapping");plt.axis('off')
+plt.subplot(133);plt.imshow(ldrReinhard[:,:,::-1]);plt.title("HDR using Reinhard Tone Mapping");plt.axis('off')
+```
+
+
+
