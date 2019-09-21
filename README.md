@@ -2183,3 +2183,38 @@ Mixed Cloning does not produce smooth regions because it picks the dominant text
 
 ```
 
+
+## Face Blending
+```
+Simple Alpha Blending with Mask
+
+The lighting in the images is very different
+The skin tones are very different
+The blend will look ridiculous
+
+===================
+alpha = cv2.cvtColor(src_mask.copy(), cv2.COLOR_GRAY2RGB)
+alpha = alpha.astype(np.float32) / 255.0
+output_blend = src * alpha + dst * (1 - alpha)
+output_blend = output_blend.astype(np.uint8)
+plt.figure(figsize=(7,7)); plt.imshow(output_blend); plt.axis('off');
+
+Semeless clone face blending
+============================
+
+Find Center of the mask 
+# Find blob centroid
+ret, src_mask_bin = cv2.threshold(src_mask, 128,255, cv2.THRESH_BINARY)
+m = cv2.moments(src_mask_bin)
+center = (int(m['m01']/m['m00']), int(m['m10']/m['m00']) )
+
+# Clone seamlessly.
+output_clone = cv2.seamlessClone(src, dst, src_mask, center, cv2.NORMAL_CLONE)
+
+plt.figure(figsize=(15,6)); 
+plt.subplot(121); plt.imshow(src); plt.title("Barack Obama");plt.axis('off'); 
+plt.subplot(122); plt.imshow(dst);  plt.title("Donald Trump");plt.axis('off'); 
+plt.figure(figsize=(15,6)); 
+plt.subplot(121); plt.imshow(output_blend); plt.title("Using Normal Blending");plt.axis('off'); 
+plt.subplot(122); plt.imshow(output_clone);  plt.title("Using Seamless Cloning");plt.axis('off');
+```
