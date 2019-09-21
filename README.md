@@ -2139,4 +2139,47 @@ plt.subplot(133);plt.imshow(ldrReinhard[:,:,::-1]);plt.title("HDR using Reinhard
 ```
 
 
+## Seamless Cloning
+```
+Seamless cloning between images is done by copying the gradient of the images, to blend one image into another image, we should not copy the pixels , instead use the gradient to create a seamless blending of images.
+
+Find the x and y gradients of the source and destination images
+Copy the gradients from source images to the destination image
+Integration in the gradients domain with Dirichlet boundary conditions
+
+output = cv2.seamlessClone(src, dst, mask, center, flags)
+Where,
+
+src - Source image that will be cloned into the destination image. In our example it is the airplane.
+dst - Destination image into which the source image will be cloned. In our example it is the sky image.
+mask - A rough mask around the object you want to clone. This should be the size of the source image. Set it to an all white image if you are lazy!
+center - Location of the center of the source image in the destination image.
+flags - The two flags that currently work are NORMAL_CLONE and MIXED_CLONE. I have included an example to show the difference.
+output - Output / result image.
+
+===================================================
+
+# Read images
+src = cv2.imread(DATA_PATH + "images/airplane.jpg")
+dst = cv2.imread(DATA_PATH + "images/sky.jpg")
+
+# Create a rough mask around the airplane.
+src_mask = np.zeros(src.shape, src.dtype)
+poly = np.array([ [4,80], [30,54], [151,63], [254,37], [298,90], [272,134], [43,122] ], np.int32)
+src_mask = cv2.fillPoly(src_mask, [poly], (255, 255, 255))
+
+# This is where the CENTER of the airplane will be placed
+center = (800,100)
+
+# Clone seamlessly.
+output = cv2.seamlessClone(src, dst, src_mask, center, cv2.NORMAL_CLONE)
+
+plt.imshow(output[:,:,::-1])
+plt.show()
+
+In Normal Cloning the texture ( gradient ) of the source image is preserved in the cloned region.
+In Mixed Cloning, the texture ( gradient ) of the cloned region is determined by a combination of the source and the destination images.
+Mixed Cloning does not produce smooth regions because it picks the dominant texture ( gradient ) between the source and destination images. (more preferred)
+
+```
 
