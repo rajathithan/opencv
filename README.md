@@ -1839,6 +1839,25 @@ highThreshold : Keeping all other parameters constant, when you increase highThr
 apertureSize : Increasing the aperture size leads to many more edges. This is simply because larger Sobel kernels return larger gradient values. Low and high thresholds should be changed when aperture size is changed.
 
 blurAmount : When the blur amount is increased, noise in the image is reduced, and spurious edges are removed. As a result, fewer edges are detected.
+
+1.Increase Aperture Size
+
+>> More Edges
+
+2.Increase Blur
+
+>> Less Noise
+>> Fewer Edges
+
+
+3.Increase High Threshold
+
+>> Fewer Edges
+
+
+4.Decrease Lower Threshold
+
+>> Connects broken edges
 ```
 
 
