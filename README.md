@@ -2313,3 +2313,120 @@ while True:
         
 cv.destroyAllWindows()
 ```
+
+
+## Affine Transform
+```
+To apply an affine transform to the entire image you can use the function warpAffine.
+
+dst =   cv2.warpAffine( src, M, dsize[, dst[, flags[, borderMode[, borderValue]]]]  )
+Parameters
+
+src input image.
+dst output image that has the size dsize and the same type as src .
+M 2×3 transformation matrix.
+dsize size of the output image.
+flags combination of interpolation methods (see InterpolationFlags) and the optional flag WARP_INVERSE_MAP that means that M is the inverse transformation ( dst→src ).
+borderMode pixel extrapolation method (see BorderTypes); when borderMode=BORDER_TRANSPARENT, it means that the pixels in the destination image corresponding to the "outliers" in the source image are not modified by the function.
+borderValue value used in case of a constant border; by default, it is 0.
+
+=====================================
+
+# Scale along x direction
+warpMat = np.float32(
+    [
+        [2.0, 0.0, 0],
+        [0,   1.0, 0]
+    ])
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+
+======================================
+
+# Scale along x direction
+warpMat = np.float32(
+    [
+        [2.0, 0.0, 0],
+        [0,   1.0, 0]
+    ])
+
+result = cv2.warpAffine(im, warpMat, (2 * outDim[0], outDim[1]))
+
+# Display image
+plt.imshow(result[...,::-1])
+
+=====================================
+
+# Scale along x and y directions
+warpMat = np.float32(
+    [
+        [2.0, 0.0, 0],
+        [0,   2.0, 0]
+    ])
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, (2 * outDim[0], 2 * outDim[1]))
+
+# Display image
+plt.imshow(result[...,::-1])
+
+=====================================
+
+# Rotate image 
+angleInDegrees = 30
+angleInRadians = 30 * np.pi / 180.0
+
+cosTheta = np.cos(angleInRadians)
+sinTheta = np.sin(angleInRadians)
+
+# Rotation matrix 
+# https://en.wikipedia.org/wiki/Rotation_matrix
+    
+warpMat = np.float32(
+    [
+        [ cosTheta, sinTheta, 0],
+        [ -sinTheta, cosTheta, 0]
+    ])
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+
+=====================================
+
+# Rotate image at a certain point
+angleInDegrees = 30
+angleInRadians = 30 * np.pi / 180.0
+
+cosTheta = np.cos(angleInRadians)
+sinTheta = np.sin(angleInRadians)
+
+centerX = im.shape[0] / 2
+centerY = im.shape[1] / 2
+
+tx = (1-cosTheta) * centerX - sinTheta * centerY
+ty =  sinTheta * centerX  + (1-cosTheta) * centerY
+
+# Rotation matrix 
+# https://en.wikipedia.org/wiki/Rotation_matrix
+    
+warpMat = np.float32(
+    [
+        [ cosTheta, sinTheta, tx],
+        [ -sinTheta,  cosTheta, ty]
+    ])
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+
+
+```
