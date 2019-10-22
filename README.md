@@ -2428,5 +2428,140 @@ result = cv2.warpAffine(im, warpMat, outDim)
 # Display image
 plt.imshow(result[...,::-1])
 
+================================
+Rotate image the easy way
+We can also use a built in function getRotationMatrix2D to rotate the image about any center. The syntax is given below.
+
+retval  =   cv2.getRotationMatrix2D(    center, angle, scale    )
+Parameters
+
+center - Center of the rotation in the source image.
+angle - Rotation angle in degrees. Positive values mean counter-clockwise rotation (the coordinate origin is assumed to be the -top-left corner).
+scale - Isotropic scale factor.
+
+# Get rotation matrix
+rotationMatrix = cv2.getRotationMatrix2D((centerX, centerY), angleInDegrees, 1)
+
+# Warp Image
+result = cv2.warpAffine(im, rotationMatrix, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+
+===================================
+
+Shear Transformation
+
+shearAmount = 0.1
+
+warpMat = np.float32(
+    [
+        [ 1, shearAmount, 0],
+        [ 0, 1.0        , 0]
+    ])
+
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, outDim, None, flags=cv2.INTER_LINEAR)
+
+# Display image
+plt.imshow(result[...,::-1])
 
 ```
+
+### Complex Affine transformation
+```
+let's say we want to perform multiple operations -- rotation, scale, shear, and translate. We can obviously the transforms one after the other, but a more efficient way is to do this in one shot. This can be done by multiplying the non-translation part of the the matrices, and adding the translation parts.
+
+Let's do a experiment where we first scale the image by 1.1, shear it by -0.1, rotate it by 10 degrees, and move in in the x direction by 10 pixels.
+
+# Scale 
+scaleAmount = 1.1
+scaleMat = np.float32(
+    [
+        [ scaleAmount, 0.0,       ],
+        [ 0,           scaleAmount]
+    ])
+
+# Shear 
+shearAmount = -0.1 
+shearMat = np.float32(
+    [
+        [ 1, shearAmount],
+        [ 0, 1.0        ]
+    ])
+
+# Rotate by 10 degrees about (0,0)
+
+angleInRadians = 10.0 * np.pi / 180.0
+
+cosTheta = np.cos(angleInRadians)
+sinTheta = np.sin(angleInRadians)
+
+rotMat = np.float32(
+    [
+        [ cosTheta, sinTheta],
+        [ -sinTheta, cosTheta]
+    ])
+
+translateVector = np.float32(
+    [
+        [10],
+        [0]
+    ])
+
+# First scale is applied, followed by shear, followed by rotation. 
+scaleShearRotate = rotMat @ shearMat @ scaleMat
+
+# Add translation
+warpMat = np.append(scaleShearRotate, translateVector, 1)
+print(warpMat)
+outPts = scaleShearRotate @ np.float32([[50, 50],[50, 149],[149, 50], [149, 149]]).T + translateVector
+print(outPts)
+
+# Warp image
+result = cv2.warpAffine(im, warpMat, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+```
+
+
+### Complex Transformations using 3-Point Correspondences
+```
+We know that an affine transfrom that 6 degrees of freedom
+
+Two for translation (tx, ty)
+Two for scale (sx, sy)
+One for shear
+One for in-plane rotation
+This means that if two images are related by an affine transform and we know the location of at least 3 points ( i.e. 6 coordinates ) in the source image and the destination image, we can recover the affine transform between them.
+
+Now, let us consider the coordinates of 3 corners of the original square. They are located at (50,50), (50, 149) and (149, 50).
+
+In the destination image above, the points are at (74, 50), (83,170), (192, 29) respectively. We can use the function estimateAffine2D to calculate the matrix.
+
+srcPoints = np.float32([[50, 50],[50, 149],[149, 50]])
+dstPoints = np.float32([[68, 45],[76, 155],[176, 27]])
+estimatedMat = cv2.estimateAffine2D(srcPoints, dstPoints)[0]
+print("True warp matrix:\n\n", warpMat)
+print("\n\nEstimated warp matrix:\n\n", estimatedMat)
+
+If we have more point correspondences, we can use all of them to get better results. Here is an example of using all four points on the square.
+
+srcPoints = np.float32([[50, 50],[50, 149],[149, 149], [149, 50]])
+dstPoints = np.float32([[68, 45],[76, 155],[183, 135], [176, 27]])
+
+estimatedMat = cv2.estimateAffine2D(srcPoints, dstPoints)[0]
+
+print("True warp matrix:\n\n", warpMat)
+print("\n\nEstimated warp matrix:\n\n", estimatedMat)
+
+# Warp image
+result = cv2.warpAffine(im, estimatedMat, outDim)
+
+# Display image
+plt.imshow(result[...,::-1])
+
+```
+
