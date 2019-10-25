@@ -2605,3 +2605,88 @@ im_out = cv2.warpPerspective(im_src, h, (im_dst.shape[1],im_dst.shape[0]))
 
 ```
 
+
+## Oriented FAST and Rotated BRIEF
+```
+FAST detects Features and BRIEF descriptors are for matching the feature points
+
+ORB in OpenCV
+Function Syntax
+Let's have a look at the function syntax for cv2.ORB_create() function which is used to create an ORB detector.
+
+retval  =   cv2.ORB_create()
+The above function has many arguments, but the default ones work pretty well. It creates an object with 500 features points.
+
+The ORB belongs to the feature2D class. It has a few important functions : cv2.Feature2D.detect(), cv2.Feature2D.compute() and cv2.Feature2D.detectAndCompute() which can be used as orb.detect(), orb.compute() and orb.detectAndCompute() where, orb = cv2.ORB_create().
+
+Let's see the function syntax:
+
+1. **cv2.Feature2D.detect()**
+keypoints   =   cv2.Feature2D.detect(   image[, mask]   )
+Where,
+
+image - Image.
+keypoints - The detected keypoints. In the second variant of the method keypoints[i] is a set of keypoints detected in images[i] .
+mask - Mask specifying where to look for keypoints (optional). It must be a 8-bit integer matrix with non-zero values in the region of interest.
+
+=======================================================================================
+
+2. **cv2.Feature2D.compute()**
+keypoints, descriptors  =   cv2.Feature2D.compute(  image, keypoints[, descriptors] )
+Where,
+
+image- Image.
+keypoints - Input collection of keypoints. Keypoints for which a descriptor cannot be computed are removed. Sometimes new keypoints can be added, for example: SIFT duplicates keypoint with several dominant orientations (for each orientation).
+descriptors - Computed descriptors. In the second variant of the method descriptors[i] are descriptors computed for a keypoints[i]. Row j is the keypoints (or keypoints[i]) is the descriptor for keypoint j-th keypoint.
+And finally:
+
+=======================================================================================
+
+3. **cv2.Feature2D.detectAndCompute()**
+keypoints, descriptors  =   cv2.Feature2D.detectAndCompute( image, mask[, descriptors[, useProvidedKeypoints]]  )
+We can also draw the detected keypoints using cv2.drawKeypoints()
+
+=======================================================================================
+
+4. **cv2.drawKeypoints()**
+outImage    =   cv2.drawKeypoints(  image, keypoints, outImage[, color[, flags]]    )
+Where,
+
+image - Source image.
+keypoints - Keypoints from the source image.
+outImage - Output image. Its content depends on the flags value defining what is drawn in the output image. See possible flags bit values below.
+color - Color of keypoints.
+flags - Flags setting drawing features. Possible flags bit values are defined by DrawMatchesFlags. See details above in drawMatches
+Below is a simple code which shows the use of ORB.
+
+=======================================================================================
+
+# Initiate ORB detector
+orb = cv2.ORB_create()
+
+# find the keypoints with ORB
+kp = orb.detect(imgGray,None)
+
+# compute the descriptors with ORB
+kp, des = orb.compute(imgGray, kp)
+
+# draw keypoints location, size and orientation
+img2 = cv2.drawKeypoints(img, kp, None, color=(0,255,0), flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+plt.figure(figsize=(12,12))
+plt.imshow(img2[:,:,::-1])
+
+=======================================================================================
+
+orb = cv2.ORB_create(10)
+kp, des = orb.detectAndCompute(imgGray, None)
+img2 = cv2.drawKeypoints(img, kp, None, color=(0,0,255), flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+plt.figure(figsize=(12,12))
+plt.imshow(img2[:,:,::-1])
+
+=======================================================================================
+
+
+
+```
+
