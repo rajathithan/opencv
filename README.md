@@ -2814,6 +2814,95 @@ plt.show()
 
 ```
 
+### Image Alignment
+```
+The technique we will use is often called “feature based” image alignment because in this technique a sparse set of features are detected in one image and matched with the features in the other image. A transformation is then calculated based on these matched features that warps one image on to the other.
 
+retval, mask    =   cv2.findHomography( srcPoints, dstPoints[, method[, ransacReprojThreshold[, mask[, maxIters[, confidence]]]]]   )
+Where
+
+srcPoints - Coordinates of the points in the original plane.
+dstPoints - Coordinates of the points in the target plane.
+method - Method used to compute a homography matrix. The following methods are possible:
+0 - a regular method using all the points, i.e., the least squares method
+RANSAC - RANSAC-based robust method
+LMEDS - Least-Median robust method
+RHO - PROSAC-based robust method
+ransacReprojThreshold - Maximum allowed reprojection error to treat a point pair as an inlier (used in the RANSAC and RHO methods only). If srcPoints and dstPoints are measured in pixels, it usually makes sense to set this parameter somewhere in the range of 1 to 10.
+mask - Optional output mask set by a robust method ( RANSAC or LMEDS ). Note that the input mask values are ignored.
+maxIters- The maximum number of RANSAC iterations.
+confidence - Confidence level, between 0 and 1.
+
+=======================================================================================
+
+
+Step 1: Read Images
+
+Step 2: Detect Features
+We then detect ORB features in the two images. Although we need only 4 features to compute the homography, typically hundreds of features are detected in the two images. We control the number of features using the parameter MAX_FEATURES in the Python code.
+
+MAX_FEATURES = 500
+GOOD_MATCH_PERCENT = 0.15
+
+# Convert images to grayscale
+im1Gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+im2Gray = cv2.cvtColor(imReference, cv2.COLOR_BGR2GRAY)
+
+# Detect ORB features and compute descriptors.
+orb = cv2.ORB_create(MAX_FEATURES)
+keypoints1, descriptors1 = orb.detectAndCompute(im1Gray, None)
+keypoints2, descriptors2 = orb.detectAndCompute(im2Gray, None)
+
+Step 3: Match Features
+We find the matching features in the two images, sort them by goodness of match and keep only a small percentage of original matches. We finally display the good matches on the images and write the file to disk for visual inspection. We use the hamming distance as a measure of similarity between two feature descriptors. The matched features are shown in the figure below by drawing a line connecting them. Notice, we have many incorrect matches and thefore we will need to use a robust method to calculate homography in the next step.
+
+# Match features.
+matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
+matches = matcher.match(descriptors1, descriptors2, None)
+
+# Sort matches by score
+matches.sort(key=lambda x: x.distance, reverse=False)
+
+# Remove not so good matches
+numGoodMatches = int(len(matches) * GOOD_MATCH_PERCENT)
+matches = matches[:numGoodMatches]
+
+# Draw top matches
+imMatches = cv2.drawMatches(im, keypoints1, imReference, keypoints2, matches, None)
+cv2.imwrite("matches.jpg", imMatches)
+
+plt.figure(figsize=[20,10])
+plt.imshow(imMatches[:,:,::-1])
+plt.show()
+
+
+Step 4: Calculate Homography
+A homography can be computed when we have 4 or more corresponding points in two images. Automatic feature matching explained in the previous section does not always produce 100% accurate matches. It is not uncommon for 20-30% of the matches to be incorrect. Fortunately, the findHomography method utilizes a robust estimation technique called Random Sample Consensus (RANSAC) which produces the right result even in the presence of large number of bad matches.
+
+# Extract location of good matches
+points1 = np.zeros((len(matches), 2), dtype=np.float32)
+points2 = np.zeros((len(matches), 2), dtype=np.float32)
+
+for i, match in enumerate(matches):
+    points1[i, :] = keypoints1[match.queryIdx].pt
+    points2[i, :] = keypoints2[match.trainIdx].pt
+
+# Find homography
+h, mask = cv2.findHomography(points1, points2, cv2.RANSAC)
+
+Step 5: Warping Image
+Once an accurate homography has been calculated, the transformation can be applied to all pixels in one image to map it to the other image. This is done using the warpPerspective function in OpenCV.
+
+# Use homography
+height, width, channels = imReference.shape
+im1Reg = cv2.warpPerspective(im, h, (width, height))
+
+plt.imshow(im1Reg[:,:,::-1])
+plt.show()
+
+# Print estimated homography
+print("Estimated homography : \n",  h)
+
+```
 
 
