@@ -2687,6 +2687,133 @@ plt.imshow(img2[:,:,::-1])
 =======================================================================================
 
 
+```
+
+### Brute Force Matcher 
+```
+Brute-Force matcher is simple. It takes the descriptor of one feature in first set and is matched with all other features in second set using some distance calculation. And the closest one is returned
+
+=======================================================================================
+
+Create Matcher object 
+retval  =   cv2.BFMatcher_create(   [, normType[, crossCheck]]  )
+
+or
+
+retval  =   cv2.BFMatcher()
+It takes two optional params.
+
+normType. It specifies the distance measurement to be used. By default, it is cv2.NORM_L2 which is good for SIFT, SURF etc. For binary string based descriptors like ORB, BRIEF, BRISK etc, cv2.NORM_HAMMING should be used, which uses Hamming distance as measurement.
+
+crossCheck which is False by default. If it is True, Matcher returns only those matches with value (i,j) such that i-th descriptor in set A has j-th descriptor in set B as the best match and vice-versa. That is, the two features in both sets should match each other. It provides consistent result, and is a good alternative to ratio test proposed by D.Lowe in SIFT paper.
+
+
+=======================================================================================
+2. Match Features
+Once the matcher is created, two important methods that can be used for mathing are
+
+BFMatcher.match() - returns the best match, or
+BFMatcher.knnMatch(). - returns k best matches where k is specified by the user. It may be useful when we need to do additional work on that.
+
+
+=======================================================================================
+3. Drawing Matches 
+Like we used cv2.drawKeypoints() to draw keypoints, cv2.drawMatches() helps us to draw the matches. It stacks two images horizontally and lines are drawn from the first image to second showing best matches.
+
+There is also cv2.drawMatchesKnn which draws all the k best matches. If k=2, it will draw two match-lines for each keypoint. So we have to pass a mask if we want to selectively draw it.
+
+
+=======================================================================================
+
+# create BFMatcher object
+bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+# Match descriptors.
+matches = bf.match(des1,des2)
+
+# Sort them in the order of their distance.
+matches = sorted(matches, key = lambda x:x.distance)
+
+# Draw first 10 matches.
+img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:10],None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+
+plt.imshow(img3),plt.show()
+```
+
+
+### FLANN based Matcher 
+```
+FLANN stands for Fast Library for Approximate Nearest Neighbors. It contains a collection of algorithms optimized for fast nearest neighbor search in large datasets and for high dimensional features. It works faster than BFMatcher for large datasets.
+
+Specify algorithm parameters
+For FLANN based matcher, we need to specify the algorithm to be used. The following algorithms are implemented.Unfortunately, the names of the algorithms are not exposed in the Python API. Therefore, we need to use their ids. To make the code readable we first create a mapping between the algorithm name and index as shown below.
+
+Algorithms	ID
+FLANN_INDEX_LINEAR	0
+FLANN_INDEX_KDTREE	1
+FLANN_INDEX_KMEANS	2
+FLANN_INDEX_COMPOSITE	3
+FLANN_INDEX_KDTREE_SINGLE	4
+FLANN_INDEX_HIERARCHICAL	5
+FLANN_INDEX_LSH	6
+FLANN_INDEX_SAVED	254
+FLANN_INDEX_AUTOTUNED	255
+
+IndexParams. - Specifies the algorithm to be used
+
+e.g. For algorithms like SIFT, SURF etc. you can pass following:
+
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+For ORB, you can pass the following :
+
+index_params= dict(algorithm = FLANN_INDEX_LSH,
+                 table_number = 6,
+                 key_size = 12,
+                 multi_probe_level = 1)
+SearchParams. It specifies the number of times the trees in the index should be recursively traversed. Higher values gives better precision, but also takes more time. If you want to change the value, pass search_params = dict(checks=100).
+
+=======================================================================================
+
+
+# Define FLANN algorithm indices
+FLANN_INDEX_LINEAR = 0
+FLANN_INDEX_KDTREE = 1
+FLANN_INDEX_KMEANS = 2
+FLANN_INDEX_COMPOSITE = 3
+FLANN_INDEX_KDTREE_SINGLE = 4
+FLANN_INDEX_HIERARCHICAL = 5
+FLANN_INDEX_LSH = 6
+FLANN_INDEX_SAVED = 254
+FLANN_INDEX_AUTOTUNED = 255
+
+
+# FLANN parameters
+index_params= dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
+search_params = dict(checks=50)   # or pass empty dictionary
+
+flann = cv2.FlannBasedMatcher(index_params,search_params)
+
+matches = flann.knnMatch(des1, trainDescriptors = des2, k=2)
+
+# Need to draw only good matches, so create a mask
+matchesMask = [[0,0] for i in range(len(matches))]
+
+# ratio test as per Lowe's paper
+for i,(m,n) in enumerate(matches):
+    if m.distance < 0.7*n.distance:
+        matchesMask[i]=[1,0]
+draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = matchesMask,
+                   flags = cv2.DrawMatchesFlags_DEFAULT)
+
+img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches[:10],None)
+
+plt.imshow(img3)
+plt.show()
 
 ```
+
+
+
 
