@@ -3106,3 +3106,25 @@ plt.imshow(img3[...,::-1]),plt.show()
 ```
 
 
+### Grabcut in OpenCV
+```
+GrabCut is an interactive segmentation method. It is used to separate an image into a background and a foreground. 
+
+mask, bgdModel, fgdModel    =   cv.grabCut( img, mask, rect, bgdModel, fgdModel, iterCount[, mode]  )
+Parameters
+
+img: Input 8-bit 3-channel image.
+mask: Input/output 8-bit single-channel mask. The mask is initialized by the function when mode is set to GC_INIT_WITH_RECT. Its elements may have one of the GrabCutClasses.
+rect: ROI containing a segmented object. The pixels outside of the ROI are marked as "obvious background". The parameter is only used when mode==GC_INIT_WITH_RECT .
+bgdModel: Temporary array for the background model. Do not modify it while you are processing the same image.
+fgdModel: Temporary arrays for the foreground model. Do not modify it while you are processing the same image.
+iterCount: Number of iterations the algorithm should make before returning the result. Note that the result can be refined with further calls with mode==GC_INIT_WITH_MASK or mode==GC_EVAL .
+mode: Operation mode that could be one of the GrabCutModes
+
+REFER TO THE GRABCUT.PY IN THE REPOS
+
+```
+
+
+
+
