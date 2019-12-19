@@ -3158,8 +3158,104 @@ signedGradient = Typically gradients can have any orientation between 0 and 360 
 
 =============================================================================================
 
-Please refer to the HOG descriptor repo
+Please refer to the HOG descriptor file in this repo
 
 ```
 
+
+### HAAR CASCADES
+```
+Paul Viola and Michael Jones came up with their seminal paper which not only detected faces robustly, but did so in real-time. It is one of the most cited papers in Computer Vision
+
+cv2.CascadeClassifier.detectMultiScale(image[, scaleFactor[, minNeighbors]])
+Where,
+
+image is the input grayscale image.
+objects is the rectangular region enclosing the objects detected
+scaleFactor is the parameter specifying how much the image size is reduced at each image scale. It is used to create the scale pyramid.
+minNeighbors is a parameter specifying how many neighbors each candidate rectangle should have, to retain it. Higher number gives lower false positives.
+
+we discuss the effect of the parameters. The effect of scaleFactor is mostly related to speed. Lower the value, slower will be the speed. In this example, we check the effect of the minNeighbors parameter. As the value of this variable is increased, false positives are decreased
+
+=============================================================================================
+
+# Load the cascade classifier from the xml file.
+faceCascade = cv2.CascadeClassifier(DATA_PATH + 'models/haarcascade_frontalface_default.xml')
+faceNeighborsMax = 10
+neighborStep = 1
+
+# Read the image
+frame = cv2.imread(DATA_PATH + "images/hillary_clinton.jpg")
+frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+# Perform multi scale detection of faces
+plt.figure(figsize=(18,18))
+count = 1
+for neigh in range(1, faceNeighborsMax, neighborStep):
+    faces = faceCascade.detectMultiScale(frameGray, 1.2, neigh)
+    frameClone = np.copy(frame)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frameClone, (x, y), 
+                      (x + w, y + h), 
+                      (255, 0, 0),2)
+
+    cv2.putText(frameClone, 
+    "# Neighbors = {}".format(neigh), (10, 50), 
+                cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 6)
+    
+    plt.subplot(3,3,count)
+    plt.imshow(frameClone[:,:,::-1])
+    count += 1
+
+plt.show()
+
+==============================================================================================
+
+Face and Smile Detection
+The effect of minNeighbors was not very pronounced in the face detection example as the face has very unique features. The mouth or smile on the other hand is very difficult to detect without false positives. This is illustrated using the example
+
+# Detect the face using the cascade
+faceCascade = cv2.CascadeClassifier(DATA_PATH + 'models/haarcascade_frontalface_default.xml')
+smileCascade = cv2.CascadeClassifier(DATA_PATH + 'models/haarcascade_smile.xml')
+smileNeighborsMax = 90
+neighborStep = 10
+
+frame = cv2.imread(DATA_PATH + "images/hillary_clinton.jpg")
+
+frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+faces = faceCascade.detectMultiScale(frameGray, 1.4, 5)
+
+# Get the face area from the detected face rectangle
+for (x, y, w, h) in faces:
+    cv2.rectangle(frame, (x, y), 
+                  (x + w, y + h), 
+                  (255, 0, 0), 2)
+    faceRoiGray = frameGray[y: y + h, x: x + w]
+    faceRoiOriginal = frame[y: y + h, x: x + w]
+
+count = 1
+plt.figure(figsize=(18,18))
+# Detect the smile from the detected face area and display the image
+for neigh in range(1, smileNeighborsMax, neighborStep):
+    smile = smileCascade.detectMultiScale(faceRoiGray, 
+                          1.5, neigh)
+
+    frameClone = np.copy(frame)
+    faceRoiClone = frameClone[y: y + h, x: x + w]
+    for (xx, yy, ww, hh) in smile:
+        cv2.rectangle(faceRoiClone, (xx, yy), 
+                      (xx + ww, yy + hh), 
+                      (0, 255, 0), 2)
+
+    cv2.putText(frameClone, 
+              "# Neighbors = {}".format(neigh), 
+              (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
+              (0, 0, 255), 4)
+    plt.subplot(3,3,count)
+    plt.imshow(frameClone[:,:,::-1])
+    count += 1
+
+plt.show()
+
+```
 
