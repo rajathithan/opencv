@@ -3381,3 +3381,263 @@ while(1):
 ```
 
 
+### Video Stabilization
+```
+Video stabilization refers to a family of methods used to reduce the effect of camera motion on the final video. The motion of the camera would be a translation ( i.e. movement in the x, y, z-direction ) or rotation (yaw, pitch, roll).
+
+Digital Video Stabilization: This method does not require special sensors for estimating camera motion. There are three main steps — 1) motion estimation 2) motion smoothing, and 3) image composition. The transformation parameters between two consecutive frames are derived in the first stage. The second stage filters out unwanted motion and in the last stage the stabilized video is reconstructed.
+
+=========================================================================
+
+Step 1 : Set Input and Output Videos
+
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from dataPath import DATA_PATH
+%matplotlib inline
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] = (6.0,6.0)
+matplotlib.rcParams['image.cmap'] = 'gray'
+
+# Read input video
+cap = cv2.VideoCapture(DATA_PATH+'videos/video.mp4')
+
+# Get frame count
+n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+# Get width and height of video stream
+w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+# Get frames per second (fps)
+fps = cap.get(cv2.CAP_PROP_FPS)
+
+# Set up output video
+out = cv2.VideoWriter('video_out.avi', cv2.VideoWriter_fourcc('M','J','P','G'), fps, (w*2, h))
+
+# Read first frame
+_, prev = cap.read()
+
+# Convert frame to grayscale
+prev_gray = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+
+
+=========================================================================
+
+Step 2: Find good features to track
+
+
+We will iterate over all the frames, and find the motion between the current frame and the previous frame. It is not necessary to know the motion of each and every pixel. The Euclidean motion model requires that we know the motion of only 2 points in the two frames. However, in practice, it is a good idea to find the motion of 50-100 points, and then use them to robustly estimate the motion model.
+
+
+corners =   cv2.goodFeaturesToTrack(    image, maxCorners, qualityLevel, minDistance, mask, blockSize, gradientSize[, corners[, useHarrisDetector[, k]]]    )
+Where,
+
+image - Input 8-bit or floating-point 32-bit, single-channel image.
+corners - Output vector of detected corners.
+maxCorners - Maximum number of corners to return. If there are more corners than are found, the strongest of them is returned. maxCorners <= 0 implies that no limit on the maximum is set and all detected corners are returned.
+qualityLevel - Parameter characterizing the minimal accepted quality of image corners. The parameter value is multiplied by the best corner quality measure, which is the minimal eigenvalue or the Harris function response. The corners with the quality measure less than the product are rejected. For example, if the best corner has the quality measure = 1500, and the qualityLevel=0.01 , then all the corners with the quality measure less than 15 are rejected.
+minDistance - Minimum possible Euclidean distance between the returned corners.
+mask - Optional region of interest. If the image is not empty (it needs to have the type CV_8UC1 and the same size as image ), it specifies the region in which the corners are detected.
+blockSize - Size of an average block for computing a derivative covariation matrix over each pixel neighborhood.
+useHarrisDetector - Parameter indicating whether to use a Harris detector or cornerMinEigenVal.
+k - Free parameter of the Harris detector.
+
+=========================================================================
+
+Step 3: Lucas-Kanade Optical Flow
+
+Once we have found good features in the previous frame, we can track them in the next frame using an algorithm called Lucas-Kanade Optical Flow named after the inventors of the algorithm.
+
+It is implemented using the function calcOpticalFlowPyrLK in OpenCV. In the name calcOpticalFlowPyrLK, LK stands for Lucas-Kanade, and Pyr stands for the pyramid. An image pyramid in computer vision is used to process an image at different scales (resolutions).
+
+Function Syntax
+nextPts, status, err    =   cv2.calcOpticalFlowPyrLK(   prevImg, nextImg, prevPts, nextPts[, status[, err[, winSize[, maxLevel[, criteria[, flags[, minEigThreshold]]]]]]]  )
+Where,
+
+prevImg - first 8-bit input image or pyramid constructed by buildOpticalFlowPyramid.
+nextImg - second input image or pyramid of the same size and the same type as prevImg.
+prevPts - vector of 2D points for which the flow needs to be found; point coordinates must be single-precision floating-point numbers.
+nextPts - output vector of 2D points (with single-precision floating-point coordinates) containing the calculated new positions of input features in the second image; when OPTFLOW_USE_INITIAL_FLOW flag is passed, the vector must have the same size as in the input.
+status - output status vector (of unsigned chars); each element of the vector is set to 1 if the flow for the corresponding features has been found, otherwise, it is set to 0.
+err - output vector of errors; each element of the vector is set to an error for the corresponding feature, type of the error measure can be set in flags parameter; if the flow wasn't found then the error is not defined (use the status parameter to find such cases).
+winSize - size of the search window at each pyramid level.
+maxLevel -0-based maximal pyramid level number; if set to 0, pyramids are not used (single level), if set to 1, two levels are used, and so on; if pyramids are passed to input then algorithm will use as many levels as pyramids have but no more than maxLevel.
+criteria - parameter, specifying the termination criteria of the iterative search algorithm (after the specified maximum number of iterations criteria.maxCount or when the search window moves by less than criteria.epsilon.
+flags - operation flags:
+OPTFLOW_USE_INITIAL_FLOW uses initial estimations, stored in nextPts; if the flag is not set, then prevPts is copied to nextPts and is considered the initial estimate.
+OPTFLOW_LK_GET_MIN_EIGENVALS use minimum eigen values as an error measure (see minEigThreshold description); if the flag is not set, then L1 distance between patches around the original and a moved point, divided by number of pixels in a window, is used as a error measure.
+minEigThreshold - the algorithm calculates the minimum eigen value of a 2x2 normal matrix of optical flow equations (this matrix is called a spatial gradient matrix), divided by number of pixels in a window; if this value is less than minEigThreshold, then a corresponding feature is filtered out and its flow is not processed, so it allows to remove bad points and get a performance boost.
+calcOpticalFlowPyrLK may not be able to calculate the motion of all the points because of a variety of reasons. For example, the feature point in the current frame could get occluded by another object in the next frame. Fortunately, as you will see in the code below, the status flag in calcOpticalFlowPyrLK can be used to filter out these values.
+
+
+=========================================================================
+
+Step 4: Robustly estimate transform
+
+To recap, in step 3.1, we found good features to track in the previous frame. In step 3.2, we used optical flow to track the features. In other words, we found the location of the features in the current frame, and we already knew the location of the features in the previous frame. So we can use these two sets of points to find the rigid (Euclidean) transformation that maps the previous frame to the current frame. This is done using the function estimateRigidTransform.
+
+Once we have estimated the motion, we can decompose it into x and y translation and rotation (angle). We store these values in an array so we can change them smoothly.
+
+# Pre-define transformation-store array
+transforms = np.zeros((n_frames-1, 3), np.float32)
+
+for i in range(n_frames-2):
+  # Detect feature points in previous frame
+  prev_pts = cv2.goodFeaturesToTrack(prev_gray,
+                                     maxCorners=200,
+                                     qualityLevel=0.01,
+                                     minDistance=30,
+                                     blockSize=3)
+    
+  # Read next frame
+  success, curr = cap.read() 
+  if not success: 
+    break
+ 
+  # Convert to grayscale
+  curr_gray = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY) 
+ 
+  # Calculate optical flow (i.e. track feature points)
+  curr_pts, status, err = cv2.calcOpticalFlowPyrLK(prev_gray, curr_gray, prev_pts, None) 
+ 
+  # Sanity check
+  assert prev_pts.shape == curr_pts.shape 
+ 
+  # Filter only valid points
+  idx = np.where(status==1)[0]
+  prev_pts = prev_pts[idx]
+  curr_pts = curr_pts[idx]
+ 
+  #Find transformation matrix
+  m = cv2.estimateAffinePartial2D(prev_pts, curr_pts)
+  # Extract traslation
+  dx = m[0][0,2]
+  dy = m[0][1,2]
+ 
+  # Extract rotation angle
+  da = np.arctan2(m[0][1,0], m[0][0,0])
+    
+  # Store transformation
+  transforms[i] = [dx,dy,da]
+    
+  # Move to next frame
+  prev_gray = curr_gray
+ 
+  print("Frame: " + str(i) +  "/" + str(n_frames) + " -  Tracked points : " + str(len(prev_pts)))
+  
+
+=========================================================================
+
+Step 5: Calculate smooth motion between frames
+
+ the previous step, we estimated the motion between the frames and stored them in an array. We now need to find the trajectory of motion by cumulatively adding the differential motion estimated in the previous step.
+
+Step 5.1 : Calculate trajectory
+In this step, we will add up the motion between the frames to calculate the trajectory. Our ultimate goal is to smooth out this trajectory.
+
+In Python, it is easily achieved using cumsum (cumulative sum) in numpy.
+
+
+# Compute trajectory using cumulative sum of transformations
+trajectory = np.cumsum(transforms, axis=0)
+
+=========================================================================
+Step 5.2 : Calculate smooth trajectory
+
+The easiest way to smooth any curve is to use a moving average filter.
+
+def movingAverage(curve, radius): 
+  window_size = 2 * radius + 1
+  # Define the filter 
+  f = np.ones(window_size)/window_size 
+  # Add padding to the boundaries 
+  curve_pad = np.lib.pad(curve, (radius, radius), 'edge') 
+  # Apply convolution 
+  curve_smoothed = np.convolve(curve_pad, f, mode='same') 
+  # Remove padding 
+  curve_smoothed = curve_smoothed[radius:-radius]
+  # return smoothed curve
+  return curve_smoothed
+  
+def smooth(trajectory): 
+  smoothed_trajectory = np.copy(trajectory) 
+  # Filter the x, y and angle curves
+  for i in range(3):
+    smoothed_trajectory[:,i] = movingAverage(trajectory[:,i], radius=SMOOTHING_RADIUS)
+ 
+  return smoothed_trajectory
+  
+ ========================================================================= 
+  
+Step 5.3: Calculate smooth transforms
+So far we have obtained a smooth trajectory. In this step, we will use the smooth trajectory to obtain smooth transforms that can be applied to frames of the videos to stabilize it.
+
+This is done by finding the difference between the smooth trajectory and the original trajectory and adding this difference back to the original transforms.
+
+ ========================================================================= 
+ 
+ Step 6: Apply smoothed camera motion to frames
+ 
+ When we stabilize a video, we may see some black boundary artifacts. This is expected because to stabilize the video, a frame may have to shrink in size.
+
+We can mitigate the problem by scaling the video about its center by a small amount (e.g. 4%).
+
+The function fixBorder below shows the implementation. We use getRotationMatrix2D because it scales and rotates the image without moving the center of the image. All we need to do is call this function with 0 rotation and scale 1.04 ( i.e. 4% upscale).
+
+def fixBorder(frame):
+  s = frame.shape
+  # Scale the image 4% without moving the center
+  T = cv2.getRotationMatrix2D((s[1]/2, s[0]/2), 0, 1.04)
+  frame = cv2.warpAffine(frame, T, (s[1], s[0]))
+  return frame
+  
+# Reset stream to first frame 
+cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+# Write n_frames-1 transformed frames
+for i in range(n_frames-2):
+  # Read next frame
+  success, frame = cap.read() 
+  if not success:
+    break
+ 
+  # Extract transformations from the new transformation array
+  dx = transforms_smooth[i,0]
+  dy = transforms_smooth[i,1]
+  da = transforms_smooth[i,2]
+ 
+  # Reconstruct transformation matrix accordingly to new values
+  m = np.zeros((2,3), np.float32)
+  m[0,0] = np.cos(da)
+  m[0,1] = -np.sin(da)
+  m[1,0] = np.sin(da)
+  m[1,1] = np.cos(da)
+  m[0,2] = dx
+  m[1,2] = dy
+ 
+  # Apply affine wrapping to the given frame
+  frame_stabilized = cv2.warpAffine(frame, m, (w,h))
+ 
+  # Fix border artifacts
+  frame_stabilized = fixBorder(frame_stabilized) 
+ 
+  # Write the frame to the file
+  frame_out = cv2.hconcat([frame, frame_stabilized])
+ 
+  # If the image is too big, resize it.
+  if(frame_out.shape[1] > 1920): 
+    frame_out = cv2.resize(frame_out, (w,h))
+  #cv2.imshow("Frame",frame_out)
+  #cv2.waitKey(0)
+
+  out.write(frame_out)
+  
+cv2.destroyAllWindows()
+out.release()
+
+
+```
+
