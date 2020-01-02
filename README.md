@@ -3641,3 +3641,222 @@ out.release()
 
 ```
 
+
+### Object Tracking
+```
+There are 8 different trackers available in OpenCV 4.1.0
+
+BOOSTING Tracker
+This tracker is based on an online version of AdaBoost — the algorithm that the HAAR cascade based face detector uses internally. This classifier needs to be trained at runtime with positive and negative examples of the object. The initial bounding box supplied by the user ( or by another object detection algorithm ) is taken as the positive example for the object, and many image patches outside the bounding box are treated as the background. Given a new frame, the classifier is run on every pixel in the neighborhood of the previous location and the score of the classifier is recorded. The new location of the object is the one where the score is maximum. So now we have one more positive example for the classifier. As more frames come in, the classifier is updated with this additional data.
+
+Pros : None. This algorithm is a decade old and works ok, but I could not find a good reason to use it especially when other advanced trackers (MIL, KCF) based on similar principles are available.
+
+Cons : Tracking performance is mediocre. It does not reliably know when tracking has failed.
+==============================================================================================
+MIL Tracker
+This tracker is similar in idea to the BOOSTING tracker described above. The big difference is that instead of considering only the current location of the object as a positive example, it looks in a small neighborhood around the current location to generate several potential positive examples. You may be thinking that it is a bad idea because in most of these "positive" examples the object is not centered.
+
+This is where Multiple Instance Learning ( MIL ) comes to rescue. In MIL, you do not specify positive and negative examples, but positive and negative "bags". The bag is labeled as positive if any of the instance in the bag is labeled as positive by the classifier. Otherwise the bag is labeled as negative. We will discuss this method in detail in the next chapter.
+
+Pros : The performance is pretty good. It does not drift as much as the BOOSTING tracker and it does a reasonable job under partial occlusion.
+
+Cons : Tracking failure is not reported reliably. Does not recover from full occlusion.
+==============================================================================================
+KCF Tracker
+KCF stands for Kernelized Correlation Filters. This tracker builds on the ideas presented in the previous two trackers. This tracker utilizes the fact that the multiple positive samples used in the MIL tracker have large overlapping regions. This overlapping data leads to some nice mathematical properties that is exploited by this tracker to make tracking faster and more accurate at the same time.
+
+Pros: Accuracy and speed are both better than MIL and it reports tracking failure better than BOOSTING and MIL.
+
+Cons : Does not recover from full occlusion.
+
+TLD Tracker
+TLD stands for Tracking, learning and detection. As the name suggests, this tracker decomposes the long term tracking task into three components — (short term) tracking, learning, and detection. From the author’s paper, "The tracker follows the object from frame to frame. The detector localizes all appearances that have been observed so far and corrects the tracker if necessary. The learning estimates detector’s errors and updates it to avoid these errors in the future." This output of this tracker tends to jump around a bit. For example, if you are tracking a pedestrian and there are other pedestrians in the scene, this tracker can sometimes temporarily track a different pedestrian than the one you intended to track. On the positive side, this track appears to track an object over a larger scale, motion, and occlusion. If you have a video sequence where the object is hidden behind another object, this tracker may be a good choice.
+
+Pros : Works the best under occlusion over multiple frames. Also, tracks best over scale changes.
+
+Cons : Lots of false positives making it almost unusable.
+==============================================================================================
+MEDIANFLOW Tracker
+Internally, this tracker tracks the object in both forward and backward directions in time and measures the discrepancies between these two trajectories. Minimizing this "ForwardBackward" error enables them to reliably detect tracking failures and select reliable trajectories in video sequences.
+
+In ours tests, we found this tracker works best when the motion is predictable and small. Unlike, other trackers that keep going even when the tracking has clearly failed, this tracker knows when the tracking has failed.
+
+Pros : Excellent tracking failure reporting. Works very well when the motion is predictable and there is no occlusion.
+
+Cons : Fails under large motion.
+
+==============================================================================================
+
+GOTURN tracker
+Out of all the tracking algorithms in the tracker class, this is the only one based on Convolutional Neural Network (CNN). It is also the only one that uses an offline trained model, because of which it is faster that other trackers. From OpenCV documentation, we know it is "robust to viewpoint changes, lighting changes, and deformations". But it does not handle occlusion very well.
+
+**NOTE :** GOTURN being a CNN based tracker, uses a caffe model for tracking. The Caffe model and the prototxt file must be present in the directory in which the code is present. You can download the files from this link.
+==============================================================================================
+MOSSE tracker
+The idea of using correlation filters for tracking is very old. However, if we simply use an image patch around the detected object and try to find its location in the next frame using correlation the results are not very good. This is because the image patch appearance may change quite a bit.
+
+Minimum Output Sum of Squared Error (MOSSE) uses discriminative correlation filter (DCF) for object tracking which produces stable correlation filters when initialized using a single frame. When the paper was published in 2010, it surprised the community because of it simplicity. It was an old idea that was modified slightly, and was able to outperform other algorithms that used heavy duty classifiers, complex appearance models, and stochastic search techniques. It was also substantially faster.
+
+MOSSE tracker is robust to variations in lighting, scale, pose, and non-rigid deformations. It also detects occlusion based upon the peak-to-sidelobe ratio, which enables the tracker to pause and resume where it left off when the object reappears. MOSSE tracker also operates at a higher fps (450 fps and even more).
+==============================================================================================
+CSRT tracker
+The CRST tracker extends the Discriminative Correlation Filter (DCF) idea in MOSSE with what the authors call Channel and Spatial Reliability (DCF-CSR). In particular, they are able to extend the search region over while the search is performed. This ensures enlarging and localization of the selected region and improved tracking of the non-rectangular regions or objects. It uses only 2 standard features (HoGs and Colornames). It also operates at a comparatively lower fps (25 fps) but gives higher accuracy for object tracking.
+==============================================================================================
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from dataPath import DATA_PATH
+%matplotlib inline
+
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] = (6.0,6.0)
+matplotlib.rcParams['image.cmap'] = 'gray'
+
+# Set up tracker.
+# Instead of MIL, you can also use
+
+tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'CSRT', 'MOSSE']
+tracker_type = tracker_types[2]
+
+
+if tracker_type == 'BOOSTING':
+    tracker = cv2.TrackerBoosting_create()
+elif tracker_type == 'MIL':
+    tracker = cv2.TrackerMIL_create()
+elif tracker_type == 'KCF':
+    tracker = cv2.TrackerKCF_create()
+elif tracker_type == 'TLD':
+    tracker = cv2.TrackerTLD_create()
+elif tracker_type == 'MEDIANFLOW':
+    tracker = cv2.TrackerMedianFlow_create()
+elif tracker_type == 'GOTURN':
+    tracker = cv2.TrackerGOTURN_create()
+elif tracker_type == "CSRT":
+    tracker = cv2.TrackerCSRT_create()
+elif tracker_type == "MOSSE":
+    tracker = cv2.TrackerMOSSE_create()
+else:
+    tracker = None
+    print('Incorrect tracker name')
+    print('Available trackers are:')
+    for t in trackerTypes:
+        print(t)
+        
+# Read video
+video = cv2.VideoCapture(DATA_PATH + "videos/hockey.mp4")
+
+# Exit if video not opened.
+if not video.isOpened():
+    print("Could not open video")
+
+# Read first frame.
+ok, frame = video.read()
+if not ok:
+    print('Cannot read video file')
+
+# Define a few colors for drawing
+red = (0,0,255)
+blue = (255,128,0)
+
+
+# Define an initial bounding box
+# Cycle
+bbox = (477, 254, 55, 152)
+
+# ship
+# bbox = (751, 146, 51, 78)
+
+# Hockey
+# bbox = (129, 47, 74, 85)
+
+# Face2
+# bbox = (237, 145, 74, 88)
+
+# meeting
+# bbox = (627, 183, 208, 190)     #CSRT
+# bbox = (652, 187, 118, 123)       #KCF
+
+# surfing
+# bbox = (97, 329, 118, 293)
+
+# surf
+# bbox = (548, 587, 52, 87)
+
+# spinning
+# bbox = (232, 218, 377, 377)       #RED
+# bbox = (699, 208, 383, 391)         #BLUE
+
+# Car
+# bbox = (71, 457, 254, 188)
+
+
+# Uncomment the line below to select a different bounding box
+# bbox = cv2.selectROI(frame, False)
+
+# Initialize tracker with first frame and bounding box
+ok = tracker.init(frame, bbox)
+
+# Display bounding box.
+p1 = (int(bbox[0]), int(bbox[1]))
+p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+cv2.rectangle(frame, p1, p2, blue, 2, 1 )
+
+plt.imshow(frame[:,:,::-1])
+plt.title("Tracking")
+
+# We will display only first 5 frames
+count = 0
+
+while True:
+    # Read a new frame
+    ok, frame = video.read()
+    if not ok:
+        break
+
+    # Start timer
+    timer = cv2.getTickCount()
+    
+    # The update method is used to obtain the location 
+    # of the new tracked object. The method returns
+    # false when the track is lost. Tracking can fail 
+    # because the object went outside the video frame or 
+    # if the tracker failed to track the object. 
+    # In both cases, a false value is returned.
+    
+    # Update tracker
+    ok, bbox = tracker.update(frame)
+    
+    # Calculate processing time and display results.
+    # Calculate Frames per second (FPS)
+    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
+
+    # Draw bounding box
+    if ok:
+      # Tracking success
+      p1 = (int(bbox[0]), int(bbox[1]))
+      p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+      cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
+    else :
+      # Tracking failure
+      cv2.putText(frame, "Tracking failure detected", (20,80), 
+                  cv2.FONT_HERSHEY_SIMPLEX, 0.75,red,2)
+
+    # Display tracker type on frame
+    cv2.putText(frame, tracker_type + " Tracker", (20,20), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.75, blue,2);
+    
+    # Display FPS on frame
+    cv2.putText(frame, "FPS : " + str(int(fps)), (20,50), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.75, blue, 2);
+
+    # Display result
+    plt.imshow(frame[:,:,::-1])
+    plt.show()
+    
+    count += 1
+    if count == 5:
+        break
+
+```
+
