@@ -3985,3 +3985,318 @@ cap.release()
 
 ```
 
+
+### kalman Filter
+```
+
+The Kalman filter is a method for tracking the internal state of the system based on internal dynamics and control inputs while fusing independent measurements of the state. It has two steps :
+
+Predict: A prediction is made based on internal dynamics and control inputs.
+
+Update : An update is made to the prediction based on independent measurements.
+
+The KalmanFilter class in OpenCV implements the Kalman filter. In the tutorial below, we will use Kalman Filtering to track a person walking. We first detect the person using a HOG based person detector. We then initialize a Kalman filter to track the the top left corner (x, y) and the width (w) of the bounding box. We use a simple motion model where x, y and w have velocities but no acceleration. Consequently, our state has 6 elements ( x, y, w, vx, vy, vw ) and the measurement has 3 elements ( x, y, w ). There are no control inputs because in a recorded video we have not way to influence the motion of the object.
+
+=============================================================================================
+
+import os
+import sys 
+import cv2
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+from dataPath import DATA_PATH
+%matplotlib inline
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] = (6.0,6.0)
+matplotlib.rcParams['image.cmap'] = 'gray'
+
+# Function to detect the rectangle with the maximum area
+# To detect max object area in multiple array of object(x,y,w,h) 
+def maxRectArea(rects):
+  area = 0
+  maxRect = rects[0].copy()
+  for rect in rects:
+    x, y, w, h = rect.ravel()
+    if w*h > area:
+      area = w*h
+      maxRect = rect.copy()
+  maxRect = maxRect[:, np.newaxis]
+  return maxRect
+
+# Initialize hog descriptor for people detection
+# Initialize hog descriptor for people detection
+winSize = (64, 128)
+blockSize = (16, 16)
+blockStride = (8, 8)
+cellSize = (8, 8)
+nbins = 9
+derivAperture = 1
+winSigma = -1
+histogramNormType = 0
+L2HysThreshold = 0.2
+gammaCorrection = True
+nlevels = 64
+signedGradient = False
+
+# Initialize HOG
+hog = cv2.HOGDescriptor(winSize, blockSize, 
+                      blockStride,cellSize, 
+                      nbins, derivAperture,
+                      winSigma, histogramNormType, 
+                      L2HysThreshold,gammaCorrection, 
+                      nlevels, signedGradient)
+
+svmDetector = cv2.HOGDescriptor_getDefaultPeopleDetector()
+hog.setSVMDetector(svmDetector)
+#  Load video
+cap = cv2.VideoCapture(DATA_PATH + "videos/boy-walking.mp4")
+
+# Confirm video is open
+if not cap.isOpened():
+    print("Unable to read video")
+
+# Variable for storing frames
+frameDisplay = []
+
+
+blue = (255, 0, 0)
+red = (0, 0, 255)
+
+
+# Initialize Kalman filter. 
+# OpenCV Kalman filter is initialized using
+
+KalmanFilter KF(numStateVariables, numMeasurements, numControlInputs, type);
+In our Kalman filter, the state consists of 6 elements (x, y, w, vx, vy, vw) of the bounding box where,
+
+x, y = Coordinates of the top left corner of the box
+
+w = Width of the detected object
+
+vx, vy = x and y velocities of top left corner of the box.
+
+vw = rate of change of width with respect to time.
+
+The height is not part of the state because height is always twice the width.
+
+Hence, numStateVariables = 6.
+
+The measurement matrix has 3 elements (x, y, w) which are simply the x and y coordinates of the top left corner of the detected object and the width of the object.
+
+Hence numMeasurements = 3
+
+There are no controlInputs because this is a recorded video and there is no way for us to change the affect the state of the person walking.
+
+The type is set to float32
+
+# Internal state has 6 elements (x, y, width, vx, vy, vw)
+# Measurement has 3 elements (x, y, width ).
+# Note: Height = 2 x width, so it is not part of the state
+# or measurement.
+KF = cv2.KalmanFilter(6, 3, 0)
+
+Motion Model and Transition Matrix 
+Because our motion model is
+
+x = x + vx * dt
+
+y = y + vy * dt
+
+w = w + vw * dt
+
+For simplicity, we assume zero accelaration. Therefore,
+
+vx = vx
+
+vy = vy
+
+vw = vw
+
+Therefore, the transition matrix is of the form
+
+[
+
+1, 0, 0, dt, 0, 0,
+
+0, 1, 0, 0, dt, 0,
+
+0, 0, 1, 0, 0, dt,
+
+0, 0, 0, 1, 0, 0,
+
+0, 0, 0, 0, 1, 0,
+
+0, 0, 0, 0, 0, 1
+
+]
+
+We set it to identity and later add dt in a loop.
+
+KF.transitionMatrix = cv2.setIdentity(KF.transitionMatrix)
+print(KF.transitionMatrix)
+
+Measurement matrix is of the form
+
+[
+
+1, 0, 0, 0, 0, 0,
+
+0, 1, 0, 0, 0, 0,
+
+0, 0, 1, 0, 0, 0,
+
+]
+
+because we are only detecting x, y and w. The measurement matrix picks those quantities and leaves vx, vy, vw.
+
+KF.measurementMatrix = cv2.setIdentity(KF.measurementMatrix)
+print(KF.measurementMatrix)
+
+# Initializing variables to be used for tracking and bookkeeping
+# Variable to store detected x, y and w
+measurement = np.zeros((3, 1), dtype=np.float32)
+# Variables to store detected object and tracked object
+objectTracked = np.zeros((4, 1), dtype=np.float32)
+objectDetected = np.zeros((4, 1), dtype=np.float32)
+
+# Variables to store results of the predict and update 
+# (a.k.a update step).
+updatedMeasurement = np.zeros((3, 1), dtype=np.float32)
+predictedMeasurement = np.zeros((6, 1), dtype=np.float32)
+
+# Variable to indicate measurement was updated
+measurementWasUpdated = False
+
+# Timing variable
+ticks = 0
+preTicks = 0
+
+# Read frames until object is detected for the first time
+success=True
+while success:
+    sucess, frame = cap.read()
+    objects, weights = hog.detectMultiScale(frame, winStride=(8, 8), padding=(32, 32),
+                                        scale=1.05, hitThreshold=0, finalThreshold=1,
+                                        useMeanshiftGrouping=False)
+
+    # Update timer
+    ticks = cv2.getTickCount()
+
+    if len(objects) > 0:
+        # Copying max object area values to Kalman Filter
+        objectDetected = maxRectArea(objects)
+        measurement = objectDetected[:3].astype(np.float32)
+
+        # Update state. Note x, y, w are set to measured values.
+        # vx = vy = vw because we have no idea about the velocities yet.
+        KF.statePost[0:3, 0] = measurement[:, 0]
+        KF.statePost[3:6] = 0.0
+
+        # Set diagonal values for covariance matrices.
+        # processNoiseCov is Q
+        KF.processNoiseCov = cv2.setIdentity(KF.processNoiseCov, (1e-2))
+        KF.measurementNoiseCov = cv2.setIdentity(KF.measurementNoiseCov, (1e-2))
+        break
+
+# Apply Kalman Filter
+
+# dt for Transition matrix
+dt = 0.0
+# Random number generator for randomly selecting frames for update
+random.seed(42)
+
+# Loop over rest of the frames
+# We will display output for only first 5 frames
+count = 0
+while True:
+    success, frame = cap.read()
+    if not success:
+        break
+
+    # Variable for displaying tracking result
+    frameDisplay = frame.copy()
+    # Variable for displaying detection result
+    frameDisplayDetection = frame.copy()
+
+    # Update dt for transition matrix.
+    # dt = time elapsed.
+    preTicks = ticks;
+    ticks = cv2.getTickCount()
+    dt = (ticks - preTicks) / cv2.getTickFrequency()
+
+    KF.transitionMatrix[0, 3] = dt
+    KF.transitionMatrix[1, 4] = dt
+    KF.transitionMatrix[2, 5] = dt
+
+    predictedMeasurement = KF.predict()
+
+    # Detect objects in current frame
+    objects, weights = hog.detectMultiScale(frame, winStride=(8, 8), padding=(32, 32),
+                                            scale=1.05, hitThreshold=0, finalThreshold=1,
+                                            useMeanshiftGrouping=False)
+    if len(objects) > 0:
+        # Find largest object
+        objectDetected = maxRectArea(objects)
+
+        # Display detected rectangle
+        x1, y1, w1, h1 = objectDetected.ravel()
+        cv2.rectangle(frameDisplayDetection, (x1, y1), (x1+w1, y1+h1), red, 2, 4)
+
+    # We will update measurements 15% of the time.
+    # Frames are randomly chosen.
+    update = random.randint(0, 100) < 15
+
+    if update:
+        # Kalman filter update step
+        if len(objects) > 0:
+            # Copy x, y, w from the detected rectangle
+            measurement = objectDetected[0:3].astype(np.float32)
+
+            # Perform Kalman update step
+            updatedMeasurement = KF.correct(measurement)
+            measurementWasUpdated = True
+        else:
+            # Measurement not updated because no object detected
+            measurementWasUpdated = False
+    else:
+        # Measurement not updated
+        measurementWasUpdated = False
+
+    if measurementWasUpdated:
+        # Use updated measurement if measurement was updated
+        objectTracked[0:3, 0] = updatedMeasurement[0:3, 0].astype(np.int32)
+        objectTracked[3, 0] = 2*updatedMeasurement[2, 0].astype(np.int32)
+    else:
+        # If measurement was not updated, use predicted values.
+        objectTracked[0:3, 0] = predictedMeasurement[0:3, 0].astype(np.int32)
+        objectTracked[3, 0] = 2*predictedMeasurement[2, 0].astype(np.int32)
+
+    # Draw tracked object
+    x2, y2, w2, h2 = objectTracked.ravel()
+    cv2.rectangle(frameDisplay, (x2, y2), (x2+w2, y2+h2), blue, 2, 4)
+
+    # Text indicating Tracking or Detection.
+    cv2.putText(frameDisplay, "Tracking", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, blue, 2)
+    cv2.putText(frameDisplayDetection, "Detection", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, red, 2)
+
+    # Concatenate detected result and tracked result vertically
+    output = np.concatenate((frameDisplayDetection, frameDisplay), axis=0)
+
+    # Display result.
+    plt.imshow(output)
+    plt.show()
+    count += 1
+    if count == 5:
+        break
+cap.release()
+
+Results
+First, note the tracking results are much smoother than the detection results. In other words, noise in tracked motion is less than noise in repeated detection. Hence, the name Kalman “Filtering” where the noise is filtered out.
+
+Second, the quality of tracking depends on the uncertainty in motion. If the motion is according to our motion model, tracking will produce very good results. However, if the object changes direction abruptly, prediction will be off until the update step is used.
+
+Finally, Kalman filtering shown in this tutorial does not use pixel information at all for tracking. Can the results be improved if we use pixel information in addition to motion information? Of course, and that is exactly what we will learn in trackers in the next few sections.
+
+```
