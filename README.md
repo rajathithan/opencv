@@ -4424,8 +4424,118 @@ while(1):
         break 
         
 cap.release()
+```
 
-###
+### CamShift
+```
+Camshift() finds an object center using meanshift and then adjusts the window size. In addition, it finds the optimal rotation of the object. The function returns the rotated rectangle structure that includes the object position, size, and orientation. In the figure shown below, the blue rectangle shows the current window of interest and green rectangle shows the rotated rectangle.
+
+We follow the steps 1 and 2 used for Object tracking with Meanshift. For the third step, after we have found the back projected image, we use CamShift() OpenCV function to track the position of the object in the new image
+
+#Initialize the video feed and declare variables. Read a frame and find the face region using Dlib facial detector. Also convert the #dlib rectangle to OpenCV rect.
+
+filename = DATA_PATH + "videos/face1.mp4"
+cap = cv2.VideoCapture(filename)
+
+# Read a frame and find the face region using dlib
+ret,frame = cap.read()
+
+# Detect faces in the image
+faceCascade = cv2.CascadeClassifier(DATA_PATH + 'models/haarcascade_frontalface_default.xml')
+
+frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+faces = faceCascade.detectMultiScale(frameGray,1.3,5)
+x,y,w,h = faces[0]
+currWindow = (x,y,w,h)
+
+#Get the face region and convert to HSV color space. Use the inRange function to get rid of spurious noise and create a mask which will #be used for computing the histogram.
+
+# get the face region from the frame
+roiObject = frame[y:y+h,x:x+w]
+face_height,face_width = roiObject.shape[:2]
+
+hsvObject =  cv2.cvtColor(roiObject, cv2.COLOR_BGR2HSV)
+
+# Get the mask for calculating histogram of the object and also remove noise
+mask = cv2.inRange(hsvObject, np.array((0., 50., 50.)), np.array((180.,255.,255.)))
+
+plt.figure(figsize=(10,10))
+plt.subplot(1,2,1)
+plt.imshow(mask)
+plt.title("Mask")
+plt.subplot(1,2,2)
+plt.imshow(roiObject[:,:,::-1])
+plt.title("Object")
+plt.show()
+
+We use 180 bins for each hue value. Use calcHist function to compute the histogram. We also normalize the histogram values to lie between and 255.
+
+# Find the histogram and normalize it to have values between 
+# 0 to 255
+histObject = cv2.calcHist([hsvObject], [0],
+                         mask, [180], [0,180])           
+cv2.normalize(histObject, histObject,
+             0, 255, cv2.NORM_MINMAX);
+             
+#Read a frame and convert to HSV color space and find the back projected image using the histogram calculated earlier.
+
+# Setup the termination criteria, either 10 iterations or move by atleast 1 pt
+term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
+# We will display only first 5 frames
+count = 0
+i=0
+while(1):
+    ret, frame = cap.read()
+    if ret == True:
+        # Convert to hsv color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # find the back projected image with the histogram obtained earlier
+        backProjectImage = cv2.calcBackProject([hsv], [0], histObject, [0,180], 1)
+
+
+
+        # Compute the new window using CAM shift in the present frame
+        rotatedWindow, currWindow = cv2.CamShift(backProjectImage, currWindow, term_crit)
+
+        # Get the window used by mean shift
+        x,y,w,h = currWindow
+
+        # Get the rotatedWindow vertices
+        rotatedWindow = cv2.boxPoints(rotatedWindow)
+        rotatedWindow = np.int0(rotatedWindow)
+        frameClone = frame.copy()
+
+        # Display the current window used for mean shift
+        cv2.rectangle(frameClone, (x,y), (x+w,y+h), (255, 0, 0), 2, cv2.LINE_AA)
+
+        # Display the rotated rectangle with the orientation information
+        frameClone = cv2.polylines(frameClone, [rotatedWindow], True, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frameClone, "{},{},{},{}".format(x,y,w,h), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, .8, (0, 0, 255), 2, cv2.LINE_AA)
+        cv2.putText(frameClone, "{}".format(rotatedWindow), (10, 80), cv2.FONT_HERSHEY_SIMPLEX, .8, (0, 0, 255), 2, cv2.LINE_AA)
+
+        if count % 20 == 0:
+            plt.figure(figsize=(12,12))
+            plt.subplot(1,2,1)
+            plt.imshow(backProjectImage)
+            plt.title("Back Projected Image")
+            plt.subplot(1,2,2)
+            plt.imshow(frameClone[:,:,::-1])
+            plt.title('CAM Shift Object Tracking Demo')
+            plt.show()
+
+        i+=1
+    else:
+        break
+    count += 1
+    if count > 100:
+        break
+        
+        
+cap.release()
+
+```
               
 
 
@@ -4437,4 +4547,3 @@ cap.release()
 
 
 
-```
