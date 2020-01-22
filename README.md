@@ -4300,3 +4300,141 @@ Second, the quality of tracking depends on the uncertainty in motion. If the mot
 Finally, Kalman filtering shown in this tutorial does not use pixel information at all for tracking. Can the results be improved if we use pixel information in addition to motion information? Of course, and that is exactly what we will learn in trackers in the next few sections.
 
 ```
+
+
+### Meanshift
+```
+Meanshift is a non-parametric approach for finding the mode of a set of points. In other words, it finds the maxima of a density function. It was first presented by Fukunaga and Hostetler in 1975 in their paper. Variations of meanshift algorithm are used for applications like Image segmentation and edge preserving filtering.
+
+Find the color histogram of the object of interest.
+
+For every new frame, find a likelihood image ( which is similar to a density function ), whose pixels indicate how similar they are with the color distribution of the object of interest. This likelihood image can be obtained by histogram backprojection which is discussed in the next section.
+
+Use Meanshift to find the maxima of this likelihood image cum density function, which gives the position of the object in the new frame.
+
+Histogram backprojection is a way of finding the similarity between two images. It can be vaguely defined as a method of re-applying a pre-calculated histogram to a new image to find the similarity between the color distribution of the new image and the object of interest. Say, we have a histogram of the object of interest given by H. Then, for every pixel in the new image, it finds the bin in H that it should belong to and creates a new image with the pixel value being the value of bin count.
+
+Step 1 : Find the histogram of the face region
+
+First, we detect the face using Dlib’s face detector. Then compute the histogram of the face region. HSV color space is an intuitive color space as it represents color much like humans perceive it. Thus we use this to calculate the histogram of the face region. We use the Hue Channel only. However, both the H and S channels can be used. We use the calcHist() OpenCV function to compute the histogram and normalize the histogram to have values in the range [0, 255]. It should be kept in mind that color information is very sensitive to lighting variations.
+
+Step 2 : Find Back Projected image
+
+For every new frame, convert it to the same color space used for finding the histogram. Find the back projected image,  BP  using the calcBackProject() OpenCV function.
+
+Step 3 : Apply Meanshift
+Use meanshift to find the maxima in the back projected image in the neighborhood of the old position. We use meanShift() OpenCV function to get the new position. As explained in the earlier section, the algorithm finds the mode of the back projected image which is a confidence map of similarity between the color distribution of the object and the new image. The first few iterations for a particular frame of the meanshift process are shown in the figure below.
+
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+from dataPath import DATA_PATH
+%matplotlib inline
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] = (6.0,6.0)
+matplotlib.rcParams['image.cmap'] = 'gray'
+
+
+filename = DATA_PATH + "videos/face1.mp4"
+cap = cv2.VideoCapture(filename)
+
+#nitialize the video feed and declare variables. Read a frame and find the face region using Dlib facial detector. Also convert the #lib rectangle to OpenCV rect.
+
+# Read a frame and find the face region using dlib
+ret,frame = cap.read()
+
+# Detect faces in the image
+faceCascade = cv2.CascadeClassifier(DATA_PATH + 'models/haarcascade_frontalface_default.xml')
+
+frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+faces = faceCascade.detectMultiScale(frameGray,1.3,5)
+x,y,w,h = faces[0]
+
+currWindow = (x,y,w,h)
+
+
+#Get the face region and convert to HSV color space. Use the inRange function to get rid of spurious noise and create a mask which will #be used for computing the histogram.
+
+# get the face region from the frame
+roiObject = frame[y:y+h,x:x+w]
+
+hsvObject =  cv2.cvtColor(roiObject, cv2.COLOR_BGR2HSV)
+
+# Get the mask for calculating histogram of the object and 
+# also remove noise
+mask = cv2.inRange(hsvObject, np.array((0., 50., 50.)), 
+                  np.array((180.,255.,255.)))
+
+plt.figure(figsize=(12,12))
+plt.subplot(1,2,1)
+plt.title("Mask of ROI")
+plt.imshow(mask)
+plt.subplot(1,2,2)
+plt.title("ROI")
+plt.imshow(roiObject[:,:,::-1])
+plt.show()
+
+
+#We use 180 bins for each hue value. Use calcHist function to compute the histogram. We also normalize the histogram values to lie #between and 255.
+
+# Find the histogram and normalize it to have values 
+# between 0 to 255
+histObject = cv2.calcHist([hsvObject], [0],
+                        mask, [180], [0,180])           
+cv2.normalize(histObject, histObject, 0, 
+              255, cv2.NORM_MINMAX);
+              
+# Setup the termination criteria, either 10 iterations or move by atleast 1 pt
+term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
+
+# We will process only first 5 frames
+count = 0
+while(1):
+    ret , frame = cap.read()
+    if ret == True:
+        # Convert to hsv color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # find the back projected image with the histogram obtained earlier
+        backProjectImage = cv2.calcBackProject([hsv], [0], histObject, [0,180], 1)
+
+        # Compute the new window using mean shift in the present frame
+        ret, currWindow = cv2.meanShift(backProjectImage, currWindow, term_crit)
+
+        # Display the frame with the tracked location of face
+        x,y,w,h = currWindow
+        frameClone = frame.copy()
+
+        if count % 20 == 0:
+            plt.figure(figsize=(12,12))
+            plt.subplot(1,2,1)
+            plt.imshow(backProjectImage)
+            plt.title("Back Projected Image")
+            cv2.rectangle(frameClone, (x,y), (x+w,y+h), (255,0,0), 2, cv2.LINE_AA)
+            plt.subplot(1,2,2)
+            plt.imshow(frameClone[:,:,::-1])
+            plt.title('Mean Shift Object Tracking Demo')
+            plt.show()
+    else:
+        break
+    count += 1
+    if count > 100:
+        break 
+        
+cap.release()
+
+###
+              
+
+
+
+
+
+
+
+
+
+
+```
