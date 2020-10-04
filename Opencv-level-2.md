@@ -76,8 +76,13 @@ Requires the XML files with landmarks annotation
 training_with_face_landmarks.xml
 testing_with_face_landmarks.xml
 
-dlib model are available in the below location
+dlib models are available in the below location
+
 http://dlib.net/files/
+https://github.com/davisking/dlib-models/tree/master/gender-classifier
+
+Data files 
+https://www.dropbox.com/s/e2wa5wf4vpe2kni/facial_landmark_data.zip?dl=1
 
 
 import os
