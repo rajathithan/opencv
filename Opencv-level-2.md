@@ -188,3 +188,17 @@ derivBorder - the border mode for gradients.
 tryReuseInputImage - put ROI of input image into the pyramid if possible. You can pass false to force data copying.
 ```
 
+### 33 Points
+```
+points33Indices = [
+                   1, 3, 5, 8, 11, 13, 15,     # Jaw line
+                   17, 19, 21,                 # Left eyebrow
+                   22, 24, 26,                 # Right eyebrow
+                   30, 31,                     # Nose bridge
+                   33, 35,                     # Lower nose
+                   36, 37, 38, 39, 40, 41,     # Left eye
+                   42, 43, 44, 45, 46, 47,     # Right Eye
+                   48, 51, 54, 57              # Outer lip
+                  ]
+
+```
