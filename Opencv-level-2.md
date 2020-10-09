@@ -310,3 +310,37 @@ if __name__ == '__main__':
   createXml(trainFiles, os.path.join(fldDatadir, 'training_with_face_landmarks.xml'), numPoints)
   createXml(testFiles, os.path.join(fldDatadir, 'testing_with_face_landmarks.xml'), numPoints)
 ```
+
+
+### Returns 8 points on the boundary of a rectangle
+```
+def getEightBoundaryPoints(h, w):
+  boundaryPts = []
+  boundaryPts.append((0,0))
+  boundaryPts.append((w/2, 0))
+  boundaryPts.append((w-1,0))
+  boundaryPts.append((w-1, h/2))
+  boundaryPts.append((w-1, h-1))
+  boundaryPts.append((w/2, h-1))
+  boundaryPts.append((0, h-1))
+  boundaryPts.append((0, h/2))
+  return np.array(boundaryPts, dtype=np.float)
+
+```
+
+### Constrains points to be inside boundary
+```
+def constrainPoint(p, w, h):
+  p = (min(max(p[0], 0), w - 1), min(max(p[1], 0), h - 1))
+  return p
+```
+
+### convert Dlib shape detector object to list of tuples
+```
+def dlibLandmarksToPoints(shape):
+  points = []
+  for p in shape.parts():
+    pt = (p.x, p.y)
+    points.append(pt)
+  return points
+```
