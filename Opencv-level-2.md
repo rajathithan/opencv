@@ -328,6 +328,42 @@ def getEightBoundaryPoints(h, w):
 
 ```
 
+### detect facial landmarks in image
+```
+def getLandmarks(faceDetector, landmarkDetector, im, FACE_DOWNSAMPLE_RATIO = 1):
+  points = []
+  imSmall = cv2.resize(im,None,
+                       fx=1.0/FACE_DOWNSAMPLE_RATIO,
+                       fy=1.0/FACE_DOWNSAMPLE_RATIO,
+                       interpolation = cv2.INTER_LINEAR)
+
+  faceRects = faceDetector(imSmall, 0)
+
+  if len(faceRects) > 0:
+    maxArea = 0
+    maxRect = None
+    # TODO: test on images with multiple faces
+    for face in faceRects:
+      if face.area() > maxArea:
+        maxArea = face.area()
+        maxRect = [face.left(),
+                   face.top(),
+                   face.right(),
+                   face.bottom()
+                  ]
+
+    rect = dlib.rectangle(*maxRect)
+    scaledRect = dlib.rectangle(int(rect.left()*FACE_DOWNSAMPLE_RATIO),
+                             int(rect.top()*FACE_DOWNSAMPLE_RATIO),
+                             int(rect.right()*FACE_DOWNSAMPLE_RATIO),
+                             int(rect.bottom()*FACE_DOWNSAMPLE_RATIO))
+
+    landmarks = landmarkDetector(im, scaledRect)
+    points = dlibLandmarksToPoints(landmarks)
+  return points
+```
+
+
 ### Constrains points to be inside boundary
 ```
 def constrainPoint(p, w, h):
@@ -409,3 +445,111 @@ def normalizeImagesAndLandmarks(outSize, imIn, pointsIn):
   return imOut, pointsOut
   
 ```
+
+### find the point closest to an array of points
+```
+# pointsArray is a Nx2 and point is 1x2 ndarray
+def findIndex(pointsArray, point):
+  dist = np.linalg.norm(pointsArray-point, axis=1)
+  minIndex = np.argmin(dist)  
+  return minIndex
+  
+```
+
+### Calculate Delaunay triangles for set of points
+```
+# Returns the vector of indices of 3 points for each triangle
+def calculateDelaunayTriangles(rect, points):
+
+  # Create an instance of Subdiv2D
+  subdiv = cv2.Subdiv2D(rect)
+
+  # Insert points into subdiv
+  for p in points:
+    subdiv.insert((p[0], p[1]))
+
+  # Get Delaunay triangulation
+  triangleList = subdiv.getTriangleList()
+
+  # Find the indices of triangles in the points array
+  delaunayTri = []
+
+  for t in triangleList:
+    # The triangle returned by getTriangleList is
+    # a list of 6 coordinates of the 3 points in
+    # x1, y1, x2, y2, x3, y3 format.
+    # Store triangle as a list of three points
+    pt = []
+    pt.append((t[0], t[1]))
+    pt.append((t[2], t[3]))
+    pt.append((t[4], t[5]))
+
+    pt1 = (t[0], t[1])
+    pt2 = (t[2], t[3])
+    pt3 = (t[4], t[5])
+
+    if rectContains(rect, pt1) and rectContains(rect, pt2) and rectContains(rect, pt3):
+      # Variable to store a triangle as indices from list of points
+      ind = []
+      # Find the index of each vertex in the points list
+      for j in range(0, 3):
+        for k in range(0, len(points)):
+          if(abs(pt[j][0] - points[k][0]) < 1.0 and abs(pt[j][1] - points[k][1]) < 1.0):
+            ind.append(k)
+        # Store triangulation as a list of indices
+      if len(ind) == 3:
+        delaunayTri.append((ind[0], ind[1], ind[2]))
+
+  return delaunayTri
+```
+
+### Check if a point is inside a rectangle
+```
+def rectContains(rect, point):
+  if point[0] < rect[0]:
+    return False
+  elif point[1] < rect[1]:
+    return False
+  elif point[0] > rect[2]:
+    return False
+  elif point[1] > rect[3]:
+    return False
+  return True
+```
+
+
+### Warps and alpha blends triangular regions from img1 and img2 to img
+````
+def warpTriangle(img1, img2, t1, t2):
+  # Find bounding rectangle for each triangle
+  r1 = cv2.boundingRect(np.float32([t1]))
+  r2 = cv2.boundingRect(np.float32([t2]))
+
+  # Offset points by left top corner of the respective rectangles
+  t1Rect = []
+  t2Rect = []
+  t2RectInt = []
+
+  for i in range(0, 3):
+    t1Rect.append(((t1[i][0] - r1[0]), (t1[i][1] - r1[1])))
+    t2Rect.append(((t2[i][0] - r2[0]), (t2[i][1] - r2[1])))
+    t2RectInt.append(((t2[i][0] - r2[0]), (t2[i][1] - r2[1])))
+
+  # Get mask by filling triangle
+  mask = np.zeros((r2[3], r2[2], 3), dtype=np.float32)
+  cv2.fillConvexPoly(mask, np.int32(t2RectInt), (1.0, 1.0, 1.0), 16, 0)
+
+  # Apply warpImage to small rectangular patches
+  img1Rect = img1[r1[1]:r1[1] + r1[3], r1[0]:r1[0] + r1[2]]
+
+  size = (r2[2], r2[3])
+
+  img2Rect = applyAffineTransform(img1Rect, t1Rect, t2Rect, size)
+
+  img2Rect = img2Rect * mask
+
+  # Copy triangular region of the rectangular patch to the output image
+  img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] = img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] * ((1.0, 1.0, 1.0) - mask)
+  img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] = img2[r2[1]:r2[1]+r2[3], r2[0]:r2[0]+r2[2]] + img2Rect
+```
+
