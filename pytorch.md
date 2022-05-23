@@ -1,7 +1,7 @@
 # Pytorch Quick Snippets
 
 
-Libraries
+### Libraries
 
 ```
 
@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 torch.manual_seed(0)
 ```
 
-Get Datasets in torchvision
+### Get Datasets in torchvision
 
 ```
 [print(x) for x in inspect.getmembers(torchvision.datasets,predicate=inspect.isclass)]
@@ -64,5 +64,33 @@ Get Datasets in torchvision
 ('VOCSegmentation', torchvision.datasets.voc.VOCSegmentation)
 ('VisionDataset', torchvision.datasets.vision.VisionDataset)
 ('WIDERFace', torchvision.datasets.widerface.WIDERFace)
+
+```
+
+### Loading a test and validation dataset
+
+```
+# Training set
+train_dataset = datasets.MNIST('./data', 
+                               train=True, 
+                               download=True, 
+                               transform=transforms.ToTensor())
+
+# Validation dataset
+validation_dataset = datasets.MNIST('./data', 
+                                    train=False, 
+                                    transform=transforms.ToTensor())
+
+# Batch size : How many images are used to calculate the gradient
+batch_size = 32
+
+# Train DataLoader 
+train_loader = DataLoader(dataset=train_dataset, 
+                          batch_size=batch_size, 
+                          shuffle=True)
+# Validation DataLoader 
+validation_loader = DataLoader(dataset=validation_dataset, 
+                               batch_size=batch_size, 
+                               shuffle=False)
 
 ```
