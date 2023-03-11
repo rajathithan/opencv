@@ -153,3 +153,42 @@ class LeNet(nn.Module):
         return x
 
 ```
+
+### Display a network
+```
+lenet_model = LeNet()
+print(lenet_model)
+
+```
+
+### Get the dataset and transform to tensors
+```
+def get_data(batch_size, data_root='data', num_workers=1):
+    
+    train_test_transforms = transforms.Compose([
+        # Resize to 32X32
+        transforms.Resize((32, 32)),
+        # this re-scales image tensor values between 0-1. image_tensor /= 255
+        transforms.ToTensor(),
+        # subtract mean (0.2860) and divide by variance (0.3530).
+        # This mean and variance is calculated on training data (verify for yourself)
+        transforms.Normalize((0.2860, ), (0.3530, ))
+    ])
+    
+    # train dataloader
+    train_loader = torch.utils.data.DataLoader(
+        datasets.FashionMNIST(root=data_root, train=True, download=True, transform=train_test_transforms),
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers
+    )
+    
+    # test dataloader
+    test_loader = torch.utils.data.DataLoader(
+        datasets.FashionMNIST(root=data_root, train=False, download=True, transform=train_test_transforms),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers
+    )
+    return train_loader, test_loader
+```
