@@ -350,3 +350,111 @@ def validate(
     return test_loss, accuracy/100.0
 
 ```
+
+### Main Function
+```
+def main(model, optimizer, system_configuration=SystemConfiguration(), 
+         training_configuration=TrainingConfiguration()):
+    
+    # system configuration
+    setup_system(system_configuration)
+
+    # batch size
+    batch_size_to_set = training_configuration.batch_size
+    # num_workers
+    num_workers_to_set = training_configuration.num_workers
+    # epochs
+    epoch_num_to_set = training_configuration.epochs_count
+
+    # if GPU is available use training config, 
+    # else lower batch_size, num_workers and epochs count
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+        batch_size_to_set = 16
+        num_workers_to_set = 2
+
+    # data loader
+    train_loader, test_loader = get_data(
+        batch_size=batch_size_to_set,
+        data_root=training_configuration.data_root,
+        num_workers=num_workers_to_set
+    )
+    
+    # Update training configuration
+    training_configuration = TrainingConfiguration(
+        device=device,
+        batch_size=batch_size_to_set,
+        num_workers=num_workers_to_set
+    )
+        
+    # send model to device (GPU/CPU)
+    model.to(training_configuration.device)
+
+    best_loss = torch.tensor(np.inf)
+    
+    # epoch train/test loss
+    epoch_train_loss = np.array([])
+    epoch_test_loss = np.array([])
+    
+    # epoch train/test accuracy
+    epoch_train_acc = np.array([])
+    epoch_test_acc = np.array([])
+    
+    # trainig time measurement
+    t_begin = time.time()
+    for epoch in range(training_configuration.epochs_count):
+        
+        train_loss, train_acc = train(training_configuration, model, optimizer, train_loader, epoch)
+        
+        epoch_train_loss = np.append(epoch_train_loss, [train_loss])
+        
+        epoch_train_acc = np.append(epoch_train_acc, [train_acc])
+
+        elapsed_time = time.time() - t_begin
+        speed_epoch = elapsed_time / (epoch + 1)
+        speed_batch = speed_epoch / len(train_loader)
+        eta = speed_epoch * training_configuration.epochs_count - elapsed_time
+        
+        print(
+            "Elapsed {:.2f}s, {:.2f} s/epoch, {:.2f} s/batch, ets {:.2f}s".format(
+                elapsed_time, speed_epoch, speed_batch, eta
+            )
+        )
+    
+    return model, epoch_train_loss, epoch_train_acc, epoch_test_loss, epoch_test_acc
+```
+
+### SGD
+```
+For stochastic gradient descent update, we use the following method in PyTorch:
+
+torch.optim.SGD(params, lr=<required parameter>, momentum=0, dampening=0, weight_decay=0, nesterov=False)
+params (iterable) – iterable of parameters to optimize or dicts defining parameter groups. model.parameters() gives iterable model parameters. [Required]
+
+lr (python:float) – learning rate [Required]
+
+momentum (python:float, optional) – momentum factor (default: 0)
+
+weight_decay (python:float, optional) – weight decay (L2 penalty) (default: 0)
+
+dampening (python:float, optional) – dampening for momentum (default: 0)
+
+nesterov (bool, optional) – enables Nesterov momentum (default: False)
+
+======================================================================
+
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr=train_config.learning_rate
+)
+
+
+model, train_loss_sgd, train_acc_sgd, test_loss_sgd, test_acc_sgd = main(model, optimizer)
+```
