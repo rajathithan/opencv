@@ -579,3 +579,64 @@ plt.legend(loc='upper center')
 plt.title('Training Loss')
 plt.show()
 ```
+
+### SGD Momentum without LR Scheduler
+```
+torch.optim.SGD(params, lr=<required parameter>, momentum=0, dampening=0, weight_decay=0, nesterov=False)
+The default value of momentum is 0, we should change it to 0.9.
+
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr=train_config.learning_rate,
+    momentum = 0.9
+)
+
+model, train_loss_sgd_momentum, train_acc_sgd_momentum, test_loss_sgd_momentum, test_acc_sgd_momentum = main(model,optimizer)
+```
+
+### Time based LR Scheduler
+```
+α0=inital learning rate
+ 
+γ=decay_rate
+ 
+n=epoch
+ 
+MultiplicativeLR method in PyTorch:
+
+torch.optim.lr_scheduler.MultiplicativeLR(optimizer, lr_lambda, last_epoch=-1)
+optimizer (Optimizer) – Wrapped optimizer.
+
+lr_lambda (function or list) – A function which computes a multiplicative factor given an integer parameter epoch, or a list of such functions, one for each group in optimizer.param_groups.
+
+last_epoch (python:int) – The index of last epoch. Default: -1.
+
+============================================================================
+
+model = LeNet()
+
+init_learning_rate = 0.02
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr = init_learning_rate,
+    momentum = 0.9
+)
+
+decay_rate = 0.5
+lmbda = lambda epoch: 1/(1 + decay_rate * epoch)
+
+scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lmbda)
+
+
+model, train_loss_time_based, train_acc_time_based, test_loss_time_based, test_acc_time_based = main(
+    model, 
+    optimizer, 
+    scheduler)
+```
