@@ -640,3 +640,136 @@ model, train_loss_time_based, train_acc_time_based, test_loss_time_based, test_a
     optimizer, 
     scheduler)
 ```
+### Step Decay
+```
+StepLR method:
+
+torch.optim.lr_scheduler.StepLR(optimizer, step_size, gamma=0.1, last_epoch=-1)
+optimizer (Optimizer) – Wrapped optimizer.
+
+step_size (python:int) – Period of learning rate decay.
+
+gamma (python:float) – Multiplicative factor of learning rate decay. Default: 0.1.
+
+last_epoch (python:int) – The index of last epoch. Default: -1.
+
+==================================================================================
+
+model = LeNet()
+
+init_learning_rate = 0.02
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr = init_learning_rate,
+    momentum = 0.9
+)
+
+step_size = 10
+
+decay_rate = 0.5
+
+scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=decay_rate)
+
+
+model, train_loss_step_decay, train_acc_step_decay, test_loss_step_decay, test_acc_step_decay = main(
+    model, 
+    optimizer, 
+    scheduler)
+
+```
+
+### Exponential decay 
+```
+ExponentialLR method:
+
+torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma, last_epoch=-1)
+optimizer (Optimizer) – Wrapped optimizer.
+
+gamma (python:float) – Multiplicative factor of learning rate decay.
+
+last_epoch (python:int) – The index of last epoch. Default: -1.
+
+========================================================================
+model = LeNet()
+
+init_learning_rate = 0.02
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr = init_learning_rate,
+    momentum = 0.9
+)
+
+
+decay_rate = 0.9
+
+scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=decay_rate)
+
+
+model, train_loss_exp_decay, train_acc_exp_decay, test_loss_exp_decay, test_acc_exp_decay = main(
+    model, 
+    optimizer, 
+    scheduler)
+
+```
+
+### Reduce LR on Plateau
+```
+ReduceLROnPlateau method:
+
+torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
+optimizer (Optimizer) – Wrapped optimizer.
+
+mode (str) – One of min, max. In min mode, lr will be reduced when the quantity monitored has stopped decreasing; in max mode it will be reduced when the quantity monitored has stopped increasing. Default: ‘min’.
+
+factor (python:float) – Factor by which the learning rate will be reduced. new_lr = lr * factor. Default: 0.1.
+
+patience (python:int) – Number of epochs with no improvement after which learning rate will be reduced. For example, if patience = 2, then we will ignore the first 2 epochs with no improvement, and will only decrease the LR after the 3rd epoch if the loss still hasn’t improved then. Default: 10.
+
+verbose (bool) – If True, prints a message to stdout for each update. Default: False.
+
+threshold (python:float) – Threshold for measuring the new optimum, to only focus on significant changes. Default: 1e-4.
+
+threshold_mode (str) – One of rel, abs. In rel mode, dynamic_threshold = best ( 1 + threshold ) in ‘max’ mode or best ( 1 - threshold ) in min mode. In abs mode, dynamic_threshold = best + threshold in max mode or best - threshold in min mode. Default: ‘rel’.
+
+cooldown (python:int) – Number of epochs to wait before resuming normal operation after lr has been reduced. Default: 0.
+
+min_lr (python:float or list) – A scalar or a list of scalars. A lower bound on the learning rate of all param groups or each group respectively. Default: 0.
+
+eps (python:float) – Minimal decay applied to lr. If the difference between new and old lr is smaller than eps, the update is ignored. Default: 1e-8.
+
+Find details here
+
+We have configured the scheduler as follows:
+
+We will use train_loss as a metric to watch if it stagnates.
+We keep threshold to 0.1. So, we will watch out for change in the first decimal, i.e. redule LR if the change consecutive epochs have difference of 0.1.
+We will keep patience at 5 epochs which means we will wait for 5 epochs before changing the learning rate.
+
+=====================================================================================
+
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr=train_config.learning_rate,
+    momentum = 0.9
+)
+
+factor = 0.3  # reduce by factor 0.5
+patience = 2  # epochs
+threshold = 0.1
+verbose = True
+
+scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=factor, patience=patience, verbose=verbose, threshold=threshold)
+
+
+model, train_loss_plateau, train_acc_plateau, test_loss_plateau, test_acc_plateau = main( model, optimizer,  scheduler)
+
+```
