@@ -483,3 +483,78 @@ optimizer = optim.SGD(
 
 model, train_loss_sgd_momentum, train_acc_sgd_momentum, test_loss_sgd_momentum, test_acc_sgd_momentum = main(model,optimizer)
 ```
+### RMSProp
+```
+For RMSProp weight update, we use the following method in PyTorch:
+
+torch.optim.RMSprop(params, lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False)
+params (iterable) – iterable of parameters to optimize or dicts defining parameter groups
+
+lr (python:float, optional) – learning rate (default: 1e-2). 
+
+α is learning rate in the RMSProp update rule.
+
+momentum (python:float, optional) – momentum factor (default: 0)
+
+alpha (python:float, optional) – smoothing constant (default: 0.99). 
+
+β is smothing constant in the RMSProp update rule.
+
+eps (python:float, optional) – term added to the denominator to improve numerical stability (default: 1e-8). 
+
+This ϵ is the RMSProp update rule.
+
+centered (bool, optional) – if True, compute the centered RMSProp, the gradient is normalized by an estimation of its variance
+
+weight_decay (python:float, optional) – weight decay (L2 penalty) (default: 0)
+
+=====================================================================================================
+
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.RMSprop(
+    model.parameters(),
+    lr=train_config.learning_rate
+)
+
+
+model, train_loss_rms_prop, train_acc_rms_prop, test_loss_rms_prop, test_acc_rms_prop = main(model, optimizer)
+
+```
+
+### ADAM = Momentum + RMSPROP
+```
+For Adam weight update, we use the following method in PyTorch:
+
+torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+params (iterable) – iterable of parameters to optimize or dicts defining parameter groups
+
+lr (python:float, optional) – learning rate (default: 1e-3). 
+α is learning rate in Adam update rule.
+
+betas (Tuple[python:float, python:float], optional) – coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999)). In Adam update rule, first value of tuple is β1  and second value is β2
+
+weight_decay (python:float, optional) – weight decay (L2 penalty) (default: 0)
+
+amsgrad (boolean, optional) – whether to use the AMSGrad variant of this algorithm from the paper On the Convergence of Adam and Beyond (default: False)
+
+========================================================
+
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=train_config.learning_rate
+)
+
+
+model, train_loss_adam, train_acc_adam, test_loss_adam, test_acc_adam = main(model, optimizer)
+
+```
+
