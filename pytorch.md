@@ -161,7 +161,7 @@ print(lenet_model)
 
 ```
 
-### Get the dataset and transform to tensors
+### Get the dataset and transform to tensors & normalize the values
 ```
 def get_data(batch_size, data_root='data', num_workers=1):
     
