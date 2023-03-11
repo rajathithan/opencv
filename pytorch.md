@@ -234,3 +234,74 @@ def setup_system(system_config: SystemConfiguration) -> None:
         torch.backends.cudnn_benchmark_enabled = system_config.cudnn_benchmark_enabled
         torch.backends.cudnn.deterministic = system_config.cudnn_deterministic
 ```
+
+### Train the model
+```
+def train(
+    train_config: TrainingConfiguration, model: nn.Module, optimizer: torch.optim.Optimizer,
+    train_loader: torch.utils.data.DataLoader, epoch_idx: int
+) -> Tuple[float, float]:
+    
+    # change model in training mode
+    model.train()
+    
+    # to get batch loss
+    batch_loss = np.array([])
+    
+    # to get batch accuracy
+    batch_acc = np.array([])
+        
+    for batch_idx, (data, target) in enumerate(train_loader):
+        
+        # clone target
+        indx_target = target.clone()
+        # send data to device (it is mandatory if GPU has to be used)
+        data = data.to(train_config.device)
+        # send target to device
+        target = target.to(train_config.device)
+
+        # reset parameters gradient to zero
+        optimizer.zero_grad()
+        
+        # forward pass to the model
+        output = model(data)
+        
+        # cross entropy loss
+        loss = F.cross_entropy(output, target)
+        
+        # find gradients w.r.t training parameters
+        loss.backward()
+        
+        # Update parameters using gradients
+        optimizer.step()
+        
+        batch_loss = np.append(batch_loss, [loss.item()])
+        
+        # get probability score using softmax
+        prob = F.softmax(output, dim=1)
+            
+        # get the index of the max probability
+        pred = prob.data.max(dim=1)[1]  
+                        
+        # correct prediction
+        correct = pred.cpu().eq(indx_target).sum()
+            
+        # accuracy
+        acc = float(correct) / float(len(data))
+        
+        batch_acc = np.append(batch_acc, [acc])
+
+#         if batch_idx % train_config.log_interval == 0 and batch_idx > 0:              
+#             print(
+#                 'Train Epoch: {} [{}/{}] Loss: {:.6f} Acc: {:.4f}'.format(
+#                     epoch_idx, batch_idx * len(data), len(train_loader.dataset), loss.item(), acc
+#                 )
+#             )
+            
+    epoch_loss = batch_loss.mean()
+    epoch_acc = batch_acc.mean()
+    
+    print('\nEpoch: {} Loss: {:.6f} Acc: {:.4f}'.format(epoch_idx, epoch_loss, epoch_acc))
+
+    return epoch_loss, epoch_acc
+```
