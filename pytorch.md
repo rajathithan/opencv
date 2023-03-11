@@ -558,3 +558,24 @@ model, train_loss_adam, train_acc_adam, test_loss_adam, test_acc_adam = main(mod
 
 ```
 
+### Plot loss curves
+```
+# Plot loss
+plt.rcParams["figure.figsize"] = (15, 10)
+x = range(len(train_loss_sgd))
+
+plt.figure
+plt.plot(x, train_loss_sgd, 'r', label="SGD")
+
+plt.plot(x, train_loss_sgd_momentum, 'b', label="SGD-M")
+
+plt.plot(x, train_loss_rms_prop, 'k', label="RMSProp")
+
+plt.plot(x, train_loss_adam, 'g', label="Adam")
+
+plt.xlabel('epoch no.')
+plt.ylabel('loss')
+plt.legend(loc='upper center')
+plt.title('Training Loss')
+plt.show()
+```
