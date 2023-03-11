@@ -94,3 +94,21 @@ validation_loader = DataLoader(dataset=validation_dataset,
                                shuffle=False)
 
 ```
+
+
+### Default Imports
+```
+import os
+import time
+
+from typing import Iterable, List, Tuple
+from dataclasses import dataclass
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+
+from torchvision import datasets, transforms
+```
