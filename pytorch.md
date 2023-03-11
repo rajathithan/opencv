@@ -112,3 +112,44 @@ import torch.nn.functional as F
 
 from torchvision import datasets, transforms
 ```
+
+### Le-Net architecture
+```
+class LeNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        # convolution layers
+        self._body = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2),
+            
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2),
+        )
+        
+        # Fully connected layers
+        self._head = nn.Sequential(
+            
+            nn.Linear(in_features=16 * 5 * 5, out_features=120), 
+            nn.ReLU(inplace=True),
+            
+            nn.Linear(in_features=120, out_features=84), 
+            nn.ReLU(inplace=True),
+            
+            nn.Linear(in_features=84, out_features=10)
+        )
+
+    def forward(self, x):
+        # apply feature extractor
+        x = self._body(x)
+        # flatten the output of conv layers
+        # dimension should be batch_size * number_of weights_in_last conv_layer
+        x = x.view(x.size()[0], -1)
+        # apply classification head
+        x = self._head(x)
+        return x
+
+```
