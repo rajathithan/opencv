@@ -458,3 +458,28 @@ optimizer = optim.SGD(
 
 model, train_loss_sgd, train_acc_sgd, test_loss_sgd, test_acc_sgd = main(model, optimizer)
 ```
+
+### SGD with momentum
+```
+In PyTorch, we use torch.optim.SGD with non-zero momentum value.
+
+In the following training, we will use 
+β=0.9. Here β is momentum.
+
+
+================================================================================
+model = LeNet()
+
+train_config = TrainingConfiguration()
+
+# optimizer
+optimizer = optim.SGD(
+    model.parameters(),
+    lr=train_config.learning_rate,
+    # to use momentum, changed default value 0 to 0.9
+    momentum = 0.9
+)
+
+
+model, train_loss_sgd_momentum, train_acc_sgd_momentum, test_loss_sgd_momentum, test_acc_sgd_momentum = main(model,optimizer)
+```
